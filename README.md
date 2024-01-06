@@ -106,7 +106,7 @@ You can repeat these steps to make any kind of virtual environment
 
 ### Make a diffusion model
 Refer to the video in order to see an example  
-[![EesyDifussers](https://img.youtube.com/vi/Z5y2Y5v_yQ4/default.jpg)](https://youtu.be/Z5y2Y5v_yQ4)
+[![EasyDiffusers](https://img.youtube.com/vi/Z5y2Y5v_yQ4/default.jpg)](https://youtu.be/Z5y2Y5v_yQ4)
 
 ### Pipeline
 In order to use this effectively, Once you have a model that you like. You drop the model into the `Models` folder. Then edt `config.json` to include your new model 
