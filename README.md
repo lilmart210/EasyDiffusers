@@ -113,4 +113,4 @@ In order to use this effectively, Once you have a model that you like. You drop 
 SERVERLOCATION
 : a string for server location or foreign ip address. ALTHOUGH ABLE, NOT INTENDED FOR PUBLIC USE  
 PLATFORM
-: 'Windows' or undefined. Leave undefined if on linux or max. Used for python venv  
+: `'Windows'` or undefined. Leave undefined if on linux or max. Used for python venv. NOT NECCESARY IF USING DOCKER IMAGE  
