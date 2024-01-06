@@ -1,0 +1,42 @@
+[
+    {
+        "name" : "ClassicAnime",
+        "type" : "text2image",
+        "source" : "anime.py",
+        "options" : [
+            {
+                "name" : "inference",
+                "default" : 20,
+                "type" : "select",
+                "selection" : [5,10,20,40,100,200]
+            },
+            {
+                "name" : "count",
+                "default" : 1,
+                "max" : 4,
+                "min" : 1,
+                "type" : "number"
+            },
+            {
+                "name" : "cpu",
+                "default" : true,
+                "type" : "boolean"
+            },
+            {
+                "name" : "negatives",
+                "default":"extra arms",
+                "type" : "string"
+            }
+        ],
+        "allowImages" : false,
+        "env" : "default"
+    },
+    {
+        "name" : "FlanBase",
+        "type" : "text2text",
+        "source" : "flanbase.py",
+        "options" : [],
+        "allowImages" : false,
+        "env" : "default"
+    }
+]
