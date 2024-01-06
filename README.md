@@ -1,6 +1,7 @@
-# Diffusers Online
+# Easy Diffusers
 ## Purpose
-### Meant to be an environment where you can use Diffusers or other ML pipelines outside of Jupyter Notebook 
+### Meant to be an environment where you can use Diffusers or other ML pipelines outside of Jupyter Notebook  
+### Not meant to be a substitute for jupyter notebook, but a convenient way to interact with ml models
 
 ## Getting Started | How To
 
