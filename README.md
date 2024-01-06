@@ -93,7 +93,7 @@ In the terminal, type `docker exec -it <image_name> bash` This will bring you to
 
 ### Installing Packages
 The image comes with pip installed. Inside the package we must navigate to `/app/Volume/Environments`  
-This directory will have all of your python virtual environments. use `source <folder>/bin/activate` in order to activate your environment.  
+This directory will have all of your python virtual environments. use `source <folder>/bin/activate` or `. <folder>/bin/activate`in order to activate your environment.  
 once your environment is activated you can simply `pip install <package-name>` and it will be installed into the environment. 
 
 ### Creating a Python Environment
