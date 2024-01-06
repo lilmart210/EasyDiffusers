@@ -1,13 +1,14 @@
-# Diffusers Online
+# Easy Diffusers
 ## Purpose
-### Meant to be an environment where you can use Diffusers or other ML pipelines outside of Jupyter Notebook 
+### Meant to be an environment where you can use Diffusers or other ML pipelines outside of Jupyter Notebook  
+### Provides a convenient way to interact with ml models
 
 ## Getting Started | How To
 
 ### Build Docker
 
 1. Download the Repository
-2. Skip steps 3 and 4 if you don't intend on modifying 
+2. Skip steps 3 and 4 if you don't intend on modifying source code
 3. `npm install` in base repository directory
 4. `cd FrontEnd` and run `npm install`. Return to the root directory usng `cd ..`
 5. run `docker build -t <a-name> ./` substitute a-name for whatever you want. I use easydiff
@@ -21,11 +22,11 @@ This image Communicates on the Port 7377. Remap it if you want to
 Example docker command `docker run -dit --rm --name diffuser -p 8789:7377 --mount type=bind,source="$(pwd)",target=/app/Volume easydiff`
 
 > When using `--mount` flag, the correct file path is not instantiated as they are dockerfile instructions.  
-To fix this, The binded volume must have these directories and files
-> Models
-> Uploads
-> Data
-> Environments
+To fix this, The binded volume must have these directories and files  
+> Models  
+> Uploads  
+> Data  
+> Environments  
 > config.json  
 
 The Environments Folder must have an environment called `default`. Refer to Creating a Python Evnironment 
@@ -84,6 +85,7 @@ Models will be dropped into `Models` Folder
 cached models from huggingface/Diffusers will be stored in the `Data` Folder  
 `Environments` folder contains python venv  
 `config.json` contains the configuration of the models  
+The FrontEnd of this project saves data in the localstorage(i.e. chrome cache). If gen images are lost, look in `Uploads` Folder
 
 
 ### Accessing the Running Docker Container
@@ -111,6 +113,6 @@ In order to use this effectively, Once you have a model that you like. You drop 
 ## Env Variables
 
 SERVERLOCATION
-: a string for server location or foreign ip address. ALTHOUGH ABLE, NOT INTENDED FOR PUBLIC USE
+: a string for server location or foreign ip address. ALTHOUGH ABLE, NOT INTENDED FOR PUBLIC USE  
 PLATFORM
-: 'Windows' or undefined. Leave undefined if on linux or max. Used for python venv  
+: `'Windows'` or undefined. Leave undefined if on linux or max. Used for python venv. NOT NECCESARY IF USING DOCKER IMAGE  
