@@ -1,7 +1,7 @@
 # Easy Diffusers
 ## Purpose
 ### Meant to be an environment where you can use Diffusers or other ML pipelines outside of Jupyter Notebook  
-### Not meant to be a substitute for jupyter notebook, but a convenient way to interact with ml models
+### Provides a convenient way to interact with ml models
 
 ## Getting Started | How To
 
@@ -85,6 +85,7 @@ Models will be dropped into `Models` Folder
 cached models from huggingface/Diffusers will be stored in the `Data` Folder  
 `Environments` folder contains python venv  
 `config.json` contains the configuration of the models  
+The FrontEnd of this project saves data in the localstorage(i.e. chrome cache). If gen images are lost, look in `Uploads` Folder
 
 
 ### Accessing the Running Docker Container
