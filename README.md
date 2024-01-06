@@ -8,9 +8,9 @@
 ### Build Docker
 
 1. Download the Repository
-2. Skip steps 3 and 4 if you don't intend on modifying source code
+2. Skip steps 3 if you don't intend on modifying source code
 3. `npm install` in base repository directory
-4. `cd FrontEnd` and run `npm install`. Return to the root directory usng `cd ..`
+4. `cd FrontEnd` and run `npm install`. then run `npm run build` and Return to the root directory using `cd ..`
 5. run `docker build -t <a-name> ./` substitute a-name for whatever you want. I use easydiff
 
 If no errors than you have successfully built the image  
