@@ -1,4 +1,8 @@
 # Easy Diffusers
+### Make a diffusion model
+Refer to the video in order to see an example  
+[![EasyDiffusers](https://img.youtube.com/vi/Z5y2Y5v_yQ4/default.jpg)](https://youtu.be/Z5y2Y5v_yQ4)
+
 ## Purpose
 ### Meant to be an environment where you can use Diffusers or other ML pipelines outside of Jupyter Notebook  
 ### Provides a convenient way to interact with ml models
@@ -104,9 +108,6 @@ if accessed from windos use `default\Scripts\activate.bat` in cmd or `default\Sc
 once you are finished. You can type `deactivate` to deactivate the environment. You can also delete the folder to remove the venv 
 You can repeat these steps to make any kind of virtual environment
 
-### Make a diffusion model
-Refer to the video in order to see an example  
-[![EasyDiffusers](https://img.youtube.com/vi/Z5y2Y5v_yQ4/default.jpg)](https://youtu.be/Z5y2Y5v_yQ4)
 
 ### Pipeline
 In order to use this effectively, Once you have a model that you like. You drop the model into the `Models` folder. Then edt `config.json` to include your new model 
