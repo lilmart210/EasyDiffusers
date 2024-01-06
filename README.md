@@ -21,11 +21,11 @@ This image Communicates on the Port 7377. Remap it if you want to
 Example docker command `docker run -dit --rm --name diffuser -p 8789:7377 --mount type=bind,source="$(pwd)",target=/app/Volume easydiff`
 
 > When using `--mount` flag, the correct file path is not instantiated as they are dockerfile instructions.  
-To fix this, The binded volume must have these directories and files
-> Models
-> Uploads
-> Data
-> Environments
+To fix this, The binded volume must have these directories and files  
+> Models  
+> Uploads  
+> Data  
+> Environments  
 > config.json  
 
 The Environments Folder must have an environment called `default`. Refer to Creating a Python Evnironment 
