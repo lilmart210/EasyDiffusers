@@ -102,7 +102,7 @@ function Generator(){
     }
 
     //activate the virtual environment and run python code in it
-    function CreateVenvString(prmo){
+    function ShellPath(prmo){
         const venvloc = path.join(VENVDIRECTORY,prmo.model.env);
         //comand to activate venv
         let venvpath;
@@ -112,8 +112,14 @@ function Generator(){
             venvpath = path.join(venvloc,'Scripts','activate.bat');
         }else{
             //we are inside a linux distro
-            venvpath = `source ${path.join(venvloc,'bin','activate')}`;
+            venvpath = `. ${path.join(venvloc,'bin','activate')}`;
         }
+        return venvpath;
+    }
+
+    function CreateVenvString(prmo){
+        const venvpath = ShellPath(prmo);
+
         const cmdstring = `${venvpath} && python`
         console.log(cmdstring)
         return cmdstring
@@ -127,14 +133,22 @@ function Generator(){
         const ziped = ZipChatOptions(prmo.model.options);
         const variables = encoder.encode(JSON.stringify(ziped)).toString();
         //console.log(afilepath,workerbytes,Serverloc,variables);
-        const ActString = CreateVenvString(prmo);
-        const needsshell = Platform && Platform == 'Windows';
+        //const ActString = CreateVenvString(prmo);
+        //const needsshell = Platform && Platform == 'Windows';
         
-        const proc = spawn(ActString,[afilepath,workerbytes,Serverloc,variables],{
+        //const sp = ShellPath(prmo);
+        const sp = Platform && Platform == 'Windows' ? true : '/bin/bash'
+        const oc = CreateVenvString(prmo)
+        
+        console.log(oc);
+        console.log(sp);
+        console.log('python ' + afilepath)
+
+        const proc = spawn(oc,[afilepath,workerbytes,Serverloc,variables],{
             env : {
                 'HF_HOME' : DATADIRECTORY
             },
-            shell : needsshell
+            shell : sp
         })
         
 
