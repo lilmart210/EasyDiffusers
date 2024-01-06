@@ -128,11 +128,13 @@ function Generator(){
         const variables = encoder.encode(JSON.stringify(ziped)).toString();
         //console.log(afilepath,workerbytes,Serverloc,variables);
         const ActString = CreateVenvString(prmo);
+        const needsshell = Platform && Platform == 'Windows';
+        
         const proc = spawn(ActString,[afilepath,workerbytes,Serverloc,variables],{
             env : {
                 'HF_HOME' : DATADIRECTORY
             },
-            shell : true
+            shell : needsshell
         })
         
 
