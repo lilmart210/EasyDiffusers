@@ -18,7 +18,7 @@ Refer to the video in order to see an example
 5. run `docker build -t <a-name> ./` substitute a-name for whatever you want. I use easydiff
 
 If no errors than you have successfully built the image  
-
+> This Communicates over https, so make sure you are prefixing `https://<ipaddress:port>/`
 ### Setup the container
 
 This image Communicates on the Port 7377. Remap it if you want to  
