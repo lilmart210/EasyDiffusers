@@ -36,8 +36,7 @@ def ParseArgs(args):
     (data,location,myvar)
     (json,string,json)
     (Ts Example) data -> {
-        model : (selected from config.json),
-        history : [
+        [
             {
                 from : 'User' | 'Model' | 'Cmd',
                 time : string,
@@ -47,7 +46,6 @@ def ParseArgs(args):
                 AudioSrc? : string
             }...
         ]
-    }
     (example) location -> 192.168.0.1:877 || mywebsite.com
     (example) myvar : {hi : 10,you :"hi"}
 
