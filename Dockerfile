@@ -24,18 +24,18 @@ RUN echo "[]" > Volume/config.json
 RUN python -m venv Volume/Environments/default
 
 # copy in the data
-COPY example.com.* .
+COPY example.com.* ./
 COPY Volume/Models/Helper.py Volume/Models
 
 # copy packages
-COPY package* .
+COPY package* ./
 RUN npm install
 
 # Must Build FrontEnd before running dockerfile
 ADD FrontEnd/dist FrontEnd/dist
 
 # copy Back end
-COPY *.js .
+COPY *.js ./
 EXPOSE 7377
 
 CMD [ "npm","run","start"]
