@@ -25,7 +25,7 @@ This image Communicates on the Port 7377. Remap it if you want to
 
 Example docker command `docker run -dit --rm --name diffuser -p 8789:7377 --mount type=bind,source="$(pwd)",target=/app/Volume easydiff`
 
-> If you are using Nvidia gpus, you may have to install nvidia-runtime container and specify --runtime nvidia
+> If you are using Nvidia gpus, you may have to install nvidia-runtime container and specify --runtime nvidia  
 > When using `--mount` flag, the correct file path is not instantiated as they are dockerfile instructions.  
 To fix this, The binded volume must have these directories and files  
 > Models  
