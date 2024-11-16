@@ -1,0 +1,256 @@
+.UserInterface {
+    display: flex;
+    flex-direction: row;
+    width : 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.UserInterface .HoverButton{
+    height : 2rem;
+    width : 2rem;
+}
+
+.UserInterface .ChatPanel {
+    width : calc(min(20%,20rem));
+    display: flex;
+    flex-direction: column;
+    gap : 10px;
+    min-width: 20rem;
+}
+
+.UserInterface .ChatPanel.Hidden{
+    display: none;
+}
+
+.UserInterface .ChatPanel > * {
+    width : 100%;
+    text-align: center;
+}
+
+.UserInterface .ChatPanel > :first-child {
+    margin-top: 10px;
+}
+
+.UserInterface .ChatPanel > :last-child {
+    margin-bottom: 10px;
+}
+
+.UserInterface .List {
+    display: flex;
+    flex-direction: column;
+    flex : 1;
+}
+.UserInterface .Container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+}
+.UserInterface .Container > :first-child {
+    margin-left: 5px;
+}
+
+.UserInterface .Option {
+    width : calc(min(15%,15rem));
+    display : flex;
+    flex-direction: column;
+    min-width: 15rem;
+}
+.UserInterface .Option.Hidden {
+    display: none;
+}
+
+.UserInterface > :first-child {
+    margin-top: 5px;
+}
+.UserInterface > *{
+    width : 100%;
+    text-align: center;
+}
+
+.UserInterface .ChatPanel {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+}
+
+.UserInterface .Chat-Header{
+    display: flex;
+    flex-direction: row;
+    padding-left: 20px;
+    padding-right: 20px;
+    height : 2rem;
+    width : 100%;
+    justify-content: end;
+    background-color: rgba(36, 34, 122, 0.636);
+    gap : 5px;
+}
+
+.UserInterface .Chat-Header > .TerminalButton {
+    width : 5rem;
+}
+
+.UserInterface .Chat {
+    display: flex;
+    flex : 1;
+    width : auto;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.UserInterface .Chat > .ChatList {
+    display: flex;
+    flex-direction: column;
+    flex : 1;
+    width : calc(min(100%,50rem));
+    overflow-y : auto;
+
+}
+.UserInterface .Chat > .ChatList > :nth-child(2n) {
+    display: flex;
+    flex : 1;
+    width : 100%;
+    align-self: flex-start;
+    justify-self: end;
+}
+
+.UserInterface .Chat > .ChatList> :nth-child(2n + 1) {
+    display: flex;
+    flex : 1;
+    width : 100%;
+    align-self: flex-end;
+}
+
+
+.UserInterface .Input {
+    display: flex;
+    flex-direction: row;
+    width : calc(min(100%,50rem));
+    height : fit-content;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 4rem;
+    background-color: rgba(128, 128, 128, 0.455);
+    border-radius: 10px;
+    gap : 5px;
+}
+.UserInterface .Input > .InputField {
+    width : calc(100% - max(15rem,25%));
+    text-align: start;
+    max-height: 20rem;
+    overflow-y: scroll;
+}
+.UserInterface .Input > .InputField:focus{
+    outline: none;
+}
+
+.UserInterface .Input > .ButtonContainer {
+    display: flex;
+    flex-direction: row;
+    gap : 10px;
+    justify-content: center;
+    align-items: end;
+    min-width : calc(min(15rem,25%));
+    width : calc(min(15rem,25%));
+    padding-bottom: 20px;
+    height : 100%;
+}
+
+.UserInterface .Input > .ButtonContainer > button {
+    border: none;
+    background-color: transparent;
+    font-size: large;
+    width : 2rem;
+    height : 2rem;
+}
+.UserInterface .Chat > .Input > .ButtonContainer > button:hover{
+    border: none;
+    background-color: gray;
+    border-radius: 5px;
+    font-size: large;
+}
+.UserInterface .Chat > .Input > .ButtonContainer > button:active{
+    border: none;
+    background-color: transparent;
+    border-radius: 5px;
+    font-size: large;
+}
+
+.UserInterface .Chat > .Input > :first-child {
+    margin-right: auto;
+    margin-left: 5px;
+}
+.UserInterface .Chat > .Input > :last-child {
+    margin-right: 5px;
+}
+
+
+
+.UserInterface .Chat > .MediaContent {
+    height : 6rem;
+    display: flex;
+    flex-direction: row;
+    width : calc(min(100%,50rem));
+    margin-bottom: 5px;
+    gap : 5px;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.Hide {
+    display: none;
+}
+
+
+.UploadVideoContainer {
+    position: relative;
+    min-height : 6rem;
+    min-width : 6rem;
+}
+.UploadVideoContainer > :last-child{
+    display: none;
+    position: absolute;
+    width : 30px;
+    height : 30px;
+    top : 0;
+    left : calc(100% - 30px);
+    justify-content: center;
+    align-items: center;
+    border : none;
+    border-radius: 10px;
+}
+
+.UploadVideoContainer:hover > :last-child{
+    display: flex;
+    font-size: large;
+}
+.UploadVideoContainer:not(:hover):has(video)::after,.UploadVideoContainer:not(:hover):has(audio)::after {
+    position: absolute;
+    width : 1rem;
+    height : 1rem;
+    content: '\25B6';
+    left : calc(50% - .5rem);
+    top : calc(50% - .5rem);
+    color : white;
+    border-color: back;
+
+}
+UploadVideoContainer *::-webkit-media-controls {
+    display: none;
+}
+.UploadVideo {
+    height : 6rem;
+    width : 6rem;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    display: flex;
+    aspect-ratio: 1/1;
+}

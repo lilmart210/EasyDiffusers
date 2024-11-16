@@ -1,0 +1,51 @@
+.Protect {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.register {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width : 100vw;
+    height : 100vh;
+}
+
+.register form {
+    height : 15rem;
+    gap : 2rem;
+    display: flex;
+    flex-direction: column;
+    background-color: gray;
+    border-radius: 10px;
+    margin : 10px;
+    align-items: center;
+    width : 20rem;
+}
+.register form > div:last-child {
+    margin-top: auto;
+    margin-bottom : 10px;
+}
+.register form > div:first-child {
+    margin-top: 10px;
+    
+}
+.register > div:last-child {
+    width : 20rem;
+    display: flex;
+}
+
+.register form > div {
+    display: flex;
+    flex-direction: row;
+    width : 100%;
+}
+.register form > div > *,.register > div:last-child > * {
+    flex : .5;
+}
+.register > :last-child {
+    margin-bottom: 25%;
+}

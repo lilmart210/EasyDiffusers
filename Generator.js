@@ -145,9 +145,10 @@ function Generator(){
         console.log('python ' + afilepath)
 
         const proc = spawn(oc,[afilepath,workerbytes,Serverloc,variables],{
-            env : {
-                'HF_HOME' : DATADIRECTORY
-            },
+            //env : {
+            //    'HF_HOME' : DATADIRECTORY
+            //},
+            env : process.env,
             shell : sp
         })
         

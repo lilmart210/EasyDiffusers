@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect} from 'react'
+import { useState, useRef, useEffect, useContext} from 'react'
 import './App.css'
 import axios from 'axios';
+import { AuthContext } from './protected/authenticate';
 //for some reason i put the styling in index.css
 
 type AIModels = {
@@ -78,6 +79,9 @@ function App() {
   const [PendingResponse,SetPendingResponse] = useState(false);
   const InputFiles = useRef<HTMLInputElement>(null);
   const [ViewTerminal,SetViewTerminal] = useState(false);
+  const InputText = useRef<HTMLInputElement>(null);
+
+  const context = useContext(AuthContext);
 
   const [Models,SetModels] = useState<AIModels[]>([]);
 
@@ -162,15 +166,15 @@ function App() {
     
   }
 
-  async function KeyDown(e : React.KeyboardEvent<HTMLInputElement>){
-    if(e.key != 'Enter') return;
-
+  async function SubmitResponse(){
+    
     const stime = new Date()
 
     if(!InputFiles.current) return;
+    if(!InputText.current) return;
 
-    const text = e.currentTarget.value;
-    e.currentTarget.value = '';
+    const text = InputText.current.value;
+    InputText.current.value = '';
 
     //upload the images first
     if(InputFiles.current.files){
@@ -200,6 +204,12 @@ function App() {
     pushmessage(msg,true);
 
   }
+  
+  async function KeyDown(e : React.KeyboardEvent<HTMLInputElement>){
+    if(e.key != 'Enter') return;
+    SubmitResponse();
+  }
+
   function SubmitChoice(){
     SetAddPopup(false);
     if(!SelectRef.current) return;
@@ -269,7 +279,9 @@ function App() {
       <div className='Header'>
         <label>Systic A.I.</label>
         <button onClick={()=>SetViewTerminal(prev=>!prev)}>{`${ViewTerminal ? 'Chat' : 'Terminal'}`}</button>
+        <button onClick={()=>context.SetAuth(false)}>logout</button>
         <button onClick={()=>GetConfiguration()}>refresh</button>
+        
       </div>
       <div className='Body'>
         <div className='Chatlist'>
@@ -305,7 +317,8 @@ function App() {
           
           <div className='InputPanel'>
             <input ref={InputFiles} className='Files' type='file' multiple disabled={SelectedChat == undefined || PendingResponse}/>
-            <input className='Text' onKeyDown={KeyDown} disabled={SelectedChat == undefined || PendingResponse}></input>
+            <input ref={InputText} className='Text' onKeyDown={KeyDown} disabled={SelectedChat == undefined || PendingResponse}></input>
+            <button onClick={()=>SubmitResponse()}>{'\u{2b95}'}</button>
           </div>
         </div>
         <div className='ChatOptionPanel'>
