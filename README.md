@@ -32,7 +32,7 @@ If no errors than you have successfully built the image
 
 This image Communicates on the Port 7377. Remap it if you want to 
 
-Example docker command `docker run -dit --rm --name diffuser -p 8789:7377 --mount type=bind,source="$(pwd)",target=/app/Volume mrmartinwatson/easydiff:v1`  
+Example docker command `docker run -dit --rm --gpus all --name diffuser -p 8789:7377 --mount type=bind,source="$(pwd)",target=/app/Volume mrmartinwatson/easydiff:v1`  
 
 > If you are using Nvidia gpus, you may have to install nvidia-runtime container and specify --runtime nvidia  
 > By default, there is a model shown and a default configuration. Inside the `anime.py` file is an example of how to use `helper.py` to communicate with the backend  
