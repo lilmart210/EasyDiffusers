@@ -4,6 +4,8 @@ import { useNavigate, useNavigationType, useSearchParams } from 'react-router-do
 
 import { Outlet } from 'react-router-dom';
 
+export const prefix = `${import.meta.env.VITE_BACKEND || ''}`
+
 export function Login(){
     const nav = useNavigate();
     const [Warning,SetWarning] = useState('');
@@ -16,7 +18,7 @@ export function Login(){
         const email = formData.get('email');
         const password = formData.get('password');
 
-        fetch('/login',{
+        fetch(prefix + '/login',{
             method : 'POST',
             body : formData,
             headers : {
@@ -39,7 +41,7 @@ export function Login(){
     return (
         <div className='register'>
             <label>{Warning}</label>
-            <form action='/login' method='post' onSubmit={Submit}>
+            <form action={prefix + '/login'} method='post' onSubmit={Submit}>
                 <div>
                     <label>Email</label>
                     <input name='email' type='email'/>
@@ -79,7 +81,7 @@ export function Register(){
         if(cpword != pword) return SetWarning('Password is incorrect');
 
 
-        fetch('/register',{
+        fetch(prefix + '/register',{
             method : 'POST',
             headers : {
                 'Authorization' : `Basic ${email}:${pword}`
@@ -100,7 +102,7 @@ export function Register(){
         <div className='register'>
 
             <label>{Warning}</label>
-            <form action='/register' method='post' onSubmit={Submit}>
+            <form action={prefix + '/register'} method='post' onSubmit={Submit}>
                 
                 <div>
                     <label>Email</label>
@@ -149,19 +151,28 @@ export function Protected(){
     )
 }
 
+
 //To dev, set auth to true and put a short-circuit return statement in useEffect
 export function ProtectedProvider(props : React.PropsWithChildren){
-    const [IsAuth,SetAuth] = useState(true);
+    const [IsAuth,SetAuth] = useState(false);
     const [Token,SetToken] = useState('');
     const [RefreshToken,SetRefreshToken] = useState('');
 
     const nav = useNavigate();
 
-    
     useEffect(()=>{
-        return;
-        //verify auth and change auth if so
-        fetch('/verify',{
+        //load token
+        const token = localStorage.getItem('token');
+        if(token) SetToken(token);
+    },[])
+
+    useEffect(()=>{
+        localStorage.setItem('token',Token);
+    },[Token])
+
+    useEffect(()=>{
+        if(!Token) return SetAuth(false);
+        fetch(prefix + '/verify',{
             method : 'POST',
             headers : {
                 'Authorization' : `Bearer ${Token}`

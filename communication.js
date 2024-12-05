@@ -1,18 +1,12 @@
 require('dotenv').config();
 
-const ws = require('ws');
-const os = require('os');
-
-const {Worker, workerData} = require('worker_threads');
-const {spawn} = require("child_process");
-const fs = require('fs');
+const {spawn, exec, ChildProcess} = require("child_process");
 const path = require('path');
 
-const DATADIRECTORY = path.join(__dirname,'Volume','Data');
-const VENVDIRECTORY = path.join(__dirname,process.env.PYTHON_VIRTUAL_ENV)
 const PLATFORM = process.env.PLATFORM //WINDOWS | LINUX
-const PYTHONMAIN = `"${path.join(__dirname,'main.py')}"`;
-const PYTHONPORT = process.env.PYTHON_PORT;
+const VOLUMEDIRECTORY = path.join(__dirname,'Volume'); //volume for this project
+const ENVIRONMENTSDIRECTORY = path.join(VOLUMEDIRECTORY,'Environments');//python environments
+const MODELDIRECTORY = path.join(VOLUMEDIRECTORY,'Models');
 
 /**
  * 
@@ -21,8 +15,9 @@ const PYTHONPORT = process.env.PYTHON_PORT;
  */
 
 //Get Virtual Machine path for python
-function GetVMPath(){
-    let venvpath = VENVDIRECTORY;
+function GetVMPath(config){
+    let venvpath = path.join(ENVIRONMENTSDIRECTORY,config.env);
+
     if(PLATFORM == 'WINDOWS'){
         venvpath = path.join(venvpath,'Scripts','activate.bat');
     }else if(PLATFORM == 'LINUX'){
@@ -31,60 +26,46 @@ function GetVMPath(){
     return `"${venvpath}"`;
 }
 
-function CreateVenvString(){
-    const venvpath = GetVMPath();
+function CreateVenvString(config){
+    const venvpath = GetVMPath(config);
 
     const cmdstring = `${venvpath} && python`
     return cmdstring
 }
 
-async function SpawnProcess(){
-    let oc = CreateVenvString();
-    const shell = PLATFORM == 'WINDOWS' ? true : '/bin/bash';
+function scriptpath(config){
+    return config.source;
+}
 
-    const proc = spawn(oc,[PYTHONMAIN],{
+async function SpawnProcess(config,...args){
+    let oc = CreateVenvString(config);
+    const shell = PLATFORM == 'WINDOWS' ? true : '/bin/bash';
+    const pymain = scriptpath(config);
+
+    //the child process will make a websocket connection to main and do stuff
+    
+    const proc = spawn(oc,[pymain,...args],{
         env : process.env,
         shell : shell,
         detached : false,
-        stdio : 'inherit'
+        stdio : 'inherit',
+
+        cwd : MODELDIRECTORY
     })
 
-    let resolve;
-    let reject;
-
-    const prm = new Promise((res,rej)=>{
-        resolve = res;
-        reject = rej;
-    })
-
-    proc.on('spawn',()=>SelfSpawn(resolve,reject))
-    //make a websocket to the main.py
-
-
-
-    return prm;
+    return proc;
 }
-
-function SelfSpawn(resolve,reject){
-    let counter = 0;
-
-    const sock = new ws.WebSocket(`ws://localhost:${PYTHONPORT}`)
-
-    sock.on('error',(e)=>setTimeout(() => {
-        if(counter >= 10) return reject(e);
-        
-        counter++;
-        console.log("trying to establish a connection with python main")
-        sock.close();
-        SelfSpawn(resolve,reject);
-
-    }, 1000))
-
-    sock.on('open',()=>resolve(sock))
-
+/**
+ * 
+ * @param {ChildProcess} child 
+ */
+function Kill(child){
+    const shell = PLATFORM == 'WINDOWS' ? true : '/bin/bash';
+    const cmd = PLATFORM == 'WINDOWS' ? `taskkill /PID ${child.pid}` : `kill -9 ${child.pid}`;
+    child.kill('SIGKILL')
 }
-
 
 module.exports = {
-    SpawnProcess
+    SpawnProcess,
+    Kill
 }

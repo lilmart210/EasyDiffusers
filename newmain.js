@@ -1,6 +1,8 @@
-const {spawn} = require('child_process');
+const dotenv = require('dotenv')
+dotenv.config()
+
+const {spawn, ChildProcess, exec} = require('child_process');
 const path = require('path');
-const {createCompletion,loadModel} = require('gpt4all');
 const express = require('express');
 const os = require('os');
 const {Worker} = require('worker_threads');
@@ -10,22 +12,26 @@ const crypto = require('crypto')
 const mime = require('mime-types')
 const cors = require('cors')
 const https = require('https')
-const dotenv = require('dotenv')
 const bcrypt = require('bcrypt')
 const knex = require('knex')
 const jwt = require('jsonwebtoken')
 const ws = require('ws');
+const Source = require('./Generator');
+const comjs = require("./communication");
 
 const interfaces = os.networkInterfaces();
-dotenv.config()
 
-
-const Source = require('./Generator');
 
 
 const Generator = Source.Generator();
-const DATADIRECTORY = path.join(__dirname,'Volume','Data');
-const SAVEDIRECTORY = path.join(__dirname,'Volume','Uploads');
+const VOLUMEDIRECTORY = path.join(__dirname,'Volume'); //volume for this project
+const DATADIRECTORY = path.join(VOLUMEDIRECTORY,'Data');//project files
+const UPLOADDIRECTORY = path.join(VOLUMEDIRECTORY,'Uploads');//uploaded files |chats? is this neccesary?
+const MODELDIRECTORY = path.join(VOLUMEDIRECTORY,'Models');//python code for models
+const ENVIRONMENTSDIRECTORY = path.join(VOLUMEDIRECTORY,'Environments');//python environments
+const CACHEDIRECTORY = path.join(VOLUMEDIRECTORY,'Cache');//hugginface cache dir
+const CONFIG = path.join(VOLUMEDIRECTORY,'config.json');
+
 const TOKEN_SECRET = process.env.TOKEN_SECRET || "development";
 
 function getRandomNumbers() {
@@ -38,22 +44,99 @@ const app = express();
 /**
  * @type {ws.WebSocketServer}
  */
-const wss = ws.WebSocketServer({noServer : true});
+const wss = new ws.WebSocketServer({noServer : true});
 
 const port = 7377;
 const upload = multer.diskStorage({
     destination : (req,file,cb)=>{
-        cb(null,SAVEDIRECTORY)
+        const adir = req.UPLOAD.chat ? UPLOADDIRECTORY : DATADIRECTORY;
+        
+        const fdir = path.join(adir,req.UPLOAD.directory);
+        
+        
+        cb(null,fdir)  
     },
-    filename : (req,file,cb)=>{
-        const atime = new Date()
+    filename : async (req,file,cb)=>{
         const ext = mime.extension(file.mimetype);
+        const oname = file.originalname;
 
-        cb(null,`${getRandomNumbers()}.${ext}`)
+        const aname = req.UPLOAD.chat ? `${getRandomNumbers()}.${ext}` : oname;
+        //two different file uploads
+        //insert file into files table if a chat message
+        if(req.UPLOAD.chat != undefined){
+            //create name and add to files
+            await DB('files')
+            .insert({
+                chat : req.CHAT.id,
+                file : aname
+            })
+        }
+
+        cb(null,aname)
     }
 })
 
-const storage = multer({storage : upload})
+/**
+ * 
+ * @param {Express.Request} req 
+ * @param {Express.Multer.File} file 
+ * @param {*} cb 
+ */
+async function filefilter(req,file,cb){
+    
+    cb(null,true);//pass all files
+}
+
+const storage = multer({storage : upload,fileFilter : filefilter})
+
+/**
+ * finds location of files on body if any
+ * @param {Express.Request} req 
+ * @param {Express.Multer.File} file 
+ * @param {Function} cb 
+ */
+async function FileParams(req,res,next){
+
+    //req.AUTH.email
+    //req.AUTH.admin
+    //.chat or .project for files table upload vs projectfilesupload
+    //this may have to go into params....
+    const chat = req.CHAT && req.CHAT.chat;
+    const project = req.params.project;
+    const email = req.AUTH.email;
+    //location will be chat(id)_email
+
+    if(project == undefined && chat == undefined) return res.sendStatus(404);
+    //project and chat cannot BOTH be defined
+    if(project != undefined && chat != undefined) return res.sendStatus(403);
+    ////location,owner(email),date,chat(id)
+
+    //req.CHAT = {id,owner,date,directory}
+    //create a save path for the file and insert it into the records.
+    if(chat != undefined){
+        //get chat
+        const [entry] = await DB('chats')
+        .select('*')
+        .where({id : chat});
+
+        req.UPLOAD = {
+            directory : entry.directory,
+            chat : true
+        }
+    }else{
+        //find project file directory
+        const [entry] = await DB('projects')
+        .where({id : project,owner : email})
+        .select('directory')
+        req.UPLOAD = {
+            directory : entry.directory,
+            chat : false
+        }
+    }
+    //go next if valid
+    next()
+
+}
 
 app.use(express.json());
 app.use(express.urlencoded())
@@ -97,7 +180,7 @@ if(process.env.PRODUCTION_DATABASE){
         connection : {
             host : '0.0.0.0',
             user : 'easydiff',
-            password : 'easydiff',
+            password : 'strattest',
             database : 'easydiff'
         }
     })
@@ -105,7 +188,7 @@ if(process.env.PRODUCTION_DATABASE){
     DB = knex({
         client : 'sqlite3',
         connection : {
-            filename : path.join(__dirname,"development.sqlite3")
+            filename : path.join(VOLUMEDIRECTORY,"development.sqlite3")
         },
         useNullAsDefault : true
     })
@@ -140,9 +223,13 @@ async function DatabaseCheck(){
         table.increments('id').primary();
         table.string('name').notNullable();
         table.string('owner');
+        table.string('directory').notNullable();
+
         table.foreign('owner').references('email').inTable('users');
 
     })
+    //we might not need this. Project files are 
+    /**
     const projectfiles = DB.schema.createTable("projectfiles",(table)=>{
         table.string('name').primary();
         table.string('project').notNullable();
@@ -150,11 +237,13 @@ async function DatabaseCheck(){
 
         table.foreign('project').references('id').inTable('projects');
         table.primary(['name','project']);
-    })
+    })*/
     const chats = DB.schema.createTable("chats",(table)=>{
         table.increments('id').primary();
         table.string('owner').notNullable();
         table.string('date').notNullable();
+        table.string('directory').notNullable();
+        table.string('name').notNullable();
 
         table.foreign('owner').references('email').inTable('users');
 
@@ -164,22 +253,23 @@ async function DatabaseCheck(){
         table.string('owner').notNullable();
         table.string('date').notNullable();
         table.integer('chat').notNullable();
-
+        table.string('role').notNullable();//ai,user
+        table.string('text').notNullable();
         table.foreign('chat').references('id').inTable('chats');
     })
 
+    //these are files for messages
     const files = DB.schema.createTable("files",(table)=>{
         table.increments('id');
-        table.string('location').notNullable();
-        table.string('owner');
-        table.string('date').notNullable();
+        table.integer('chat').notNullable();
+        table.string('file').notNullable();
 
-        table.foreign('owner').references('email').inTable('users');
-        
+        table.foreign('chat').references('id').inTable('chats');
     })
+    
 
 
-    const resolved = Promise.all([User,Projects,projectfiles,chats,messages,files]);
+    const resolved = Promise.all([User,Projects,chats,messages,files]);
 
     return await resolved.then(()=>{
         console.log("Database checks passed")
@@ -188,6 +278,59 @@ async function DatabaseCheck(){
         console.log("failed to create tables",e);
     })
 
+}
+
+const configschema = [{
+    name : "anime",
+    source : "anime.py",
+    options : [
+        {
+            name : "inference",
+            default : 20,
+            type : "select",
+            selection : [5,10,20,40,100,200]
+        },
+        {
+            name : "count",
+            default : 1,
+            max : 4,
+            min : 1,
+            type : "number"
+        },
+        {
+            name : "cpu",
+            default : true,
+            type : "boolean"
+        },
+        {
+            name : "negatives",
+            default : "extra arms",
+            type : "string"
+        }
+    ],
+    allowImages : false,
+    env : "default"
+}]
+async function SetupWorkingEnvironment(){
+    //create volume folder
+    //create volume > models folder
+    //put Helpy.py into models folder
+    //put config.json into volume folder
+    //make a python venv X, don't do this.
+    //create a data folder, for huggingface home.
+
+    !fs.existsSync(VOLUMEDIRECTORY) && fs.mkdirSync(VOLUMEDIRECTORY,{recursive : true})
+    !fs.existsSync(DATADIRECTORY) && fs.mkdirSync(DATADIRECTORY,{recursive : true})
+    !fs.existsSync(MODELDIRECTORY) && fs.mkdirSync(MODELDIRECTORY,{recursive : true})
+    !fs.existsSync(CACHEDIRECTORY) && fs.mkdirSync(CACHEDIRECTORY,{recursive : true})
+    !fs.existsSync(UPLOADDIRECTORY) && fs.mkdirSync(UPLOADDIRECTORY,{recursive : true})
+    !fs.existsSync(ENVIRONMENTSDIRECTORY) && fs.mkdirSync(ENVIRONMENTSDIRECTORY,{recursive : true});
+    !fs.existsSync(CONFIG) && fs.writeFileSync(CONFIG,'[]',{encoding : 'utf-8'});
+
+    if(!fs.existsSync(path.join(MODELDIRECTORY,'Helper.py'))){     
+        const data = fs.readFileSync(path.join(__dirname,'Helper.py'),{encoding : 'utf-8'});
+        fs.writeFileSync(path.join(MODELDIRECTORY,'Helper.py'),data,{encoding : 'utf-8'});
+    }
 }
 
 // authentication
@@ -267,7 +410,7 @@ async function LoginAuth(req,res,next){
     const valid = bcrypt.compareSync(password,user.password);
     if(!valid) return res.status(401).send({message : "invalid password"});
 
-    const token = jwt.sign({email : user.email,admin : user.admin},TOKEN_SECRET);
+    const token = jwt.sign({email : user.email,admin : user.admin},TOKEN_SECRET,{expiresIn: '1d'});
 
 
     res.status(200).json({token : token,admin : user.admin});
@@ -318,92 +461,566 @@ app.post('/verify',AuthReq,(req,res)=>{
 });
 
 /**
- * AuthReq adds these to the request
- *  req.AUTH = {
-            email : verified.email,
-            admin : verified.admin
-        }
+ * Route for files
  */
+//files used in the application
+app.get('/file/',AuthReq,(req,res)=>{
 
-/**
- * Chat commands are websocket commands
- */
-//creates a new chat
-app.post('/chat',AuthReq,async (req,res)=>{
-    const adate = req.body.date;
-    if(!adate) return res.status()
-    
-    const res = await DB('chats')
-    .insert({owner : req.AUTH.email,date : adate})
-    .then((rows)=>{
-        const msg = rows.length > 0 ? 'inserted' : 'could not insert'
-        return msg;
-    }).catch(()=>{
-        return 'failed to insert';
-    })
-    
-    res.statusMessage(res).send(200);
+})
+app.post('/file/delete',AuthReq,async (req,res)=>{
+    const msgid = req.body.msg;
 
+
+    res.sendStatus(200);
 });
-//get chat and its messages
-app.get('/chat/:id',AuthReq,(req,res)=>{
+/**
+ * Route for projects and project files
+ */
+//get all projects for user
+app.get('/project',AuthReq,async (req,res)=>{
+    try{
+        const entries = await DB('projects')
+        .where({owner : req.AUTH.email})
+
+        res.send(JSON.stringify(entries));
+
+    }catch(e){
+        console.log("bad project",e);
+        res.sendStatus(500);
+    }
+})
+//get all files for project
+app.get('/project/files/:id',AuthReq,async(req,res)=>{
+    try{
+        const projid = req.params.id;
+        req.body.id = projid;
+        const [entry] = await DB('projects')
+        .select('*')
+        .where({id : projid,owner : req.AUTH.email})
+
+        const adir = path.join(DATADIRECTORY,entry.directory);
+        const entities = fs.readdirSync(adir,{encoding : 'utf-8',withFileTypes : true});
+        const files = entities.filter((itm)=>itm.isFile()).map((itm)=>({
+            name : itm.name
+        }));
+
+        res.send(JSON.stringify(files));
+
+    }catch(e){
+        console.log("proj files", e);
+        res.sendStatus(500);
+    }
+})
+//upload a file to a project
+app.post('/project/upload/:project',AuthReq,FileParams,storage.any(),async(req,res)=>{
+    res.sendStatus(200);
+});
+//files used for projects
+app.post('/project/create',AuthReq,async (req,res)=>{
+    const name = req.body.name;
+    const email = req.AUTH.email;
+
+    const adir = getRandomNumbers();
+    try{
+
+        fs.mkdirSync(path.join(DATADIRECTORY,adir),{recursive : false});
+
+        await DB('projects')
+        .insert({
+            name : name,
+            owner : email,
+            directory : adir
+        })
+    
+        res.sendStatus(200);
+    }catch(e){
+        console.log("proj create",e);
+        res.sendStatus(500);
+    }
+})
+//delete a project file
+app.post('/project/file/delete',AuthReq,async (req,res)=>{
+    const projid = req.body.id;
+    const email = req.AUTH.email;
+
+    try{
+        const [entry] = await DB('projects')
+        .select('*')
+        .where({
+            owner : email,
+            id : projid
+        })
+    
+        const fn = req.body.name;
+        const dir = entry.directory;
+        const fpath = path.join(DATADIRECTORY,dir,fn);
+
+        fs.rmSync(fpath,{force : false});
+        res.sendStatus(200);
+    }catch(e){
+        res.sendStatus(501);
+        console.log("delete proj",e);
+    }
+
+})
+//delete project and its files
+app.post('/project/delete',AuthReq,async (req,res)=>{
+    const projid = req.body.id;
+    const email = req.AUTH.email;
+
+    try{
+        const [entry] = await DB('projects')
+        .select('*')
+        .where({
+            owner : email,
+            id : projid
+        })
+    
+        const dir = entry.directory;
+        const fpath = path.join(DATADIRECTORY,dir);
+        
+        fs.rmSync(fpath,{force : false,recursive : true});
+
+        //remove the entry from the database
+        await DB('projects')
+        .select('*')
+        .where({
+            owner : email,
+            id : projid
+        })
+        .del();
+        
+        res.sendStatus(200);
+    }catch(e){
+        res.sendStatus(500);
+        console.log("delete projec files",e);
+    }
+})
+/**
+ * Route for messages
+ */
+app.post('/message/get',AuthReq,async (req,res)=>{
+    //this returns message with files
+    try{
+        const msgid = req.body.id;
+        const date = req.body.date;
+
+        //get all messages for that chat
+        let msgs;
+    
+        if(date != undefined){
+            msgs = await DB('messages')
+            .select("*")
+            .where({chat : msgid})
+            .andWhere('date','>=',date);
+        }else {            
+            msgs = await DB('messages')
+            .select("*")
+            .where({chat : msgid})
+        }
+
+        msgs = msgs.map((itm)=>({...itm,date : Number(itm.date)}))
+
+        //get all the files for that message | files (chat) is mislabeled. Should be message
+        const prms = msgs.map((itm)=>DB('files').select('*').where({chat : itm.id}))
+        const files = await Promise.all(prms);
+        //console.log(await DB('messages'))
+        //console.log(JSON.stringify(msgs));
+        //zip the files if any along with the message
+        const zipped = msgs.map((itm,i)=>({files : files[i],msg : itm}));
+        const sorted = zipped.toSorted((a,b)=>a.msg.date - b.msg.date);
+        //sort them and then send
+        //console.log("s",sorted);
+        res.send(JSON.stringify(sorted));
+
+
+    }catch(e){
+        console.log("could not fetch message",e);
+        res.sendStatus(500);
+    }
+})
+
+//update a message(not a file?) todo
+app.post('/message/update/:id',AuthReq,(req,res)=>{
 
 })
 
-//handle file uploads and fetching
+//delete a message and its files
+app.post('/message/delete',AuthReq,async (req,res)=>{
+    try{
+        const msgid = req.body.id;
+        const email = req.AUTH.email;
+
+        const entry = await DB('messages')
+        .select('*')
+        .where({owner : email,id : msgid});
+
+        if(!entry.length) return res.sendStatus(403);
+        
+        await DB('files')
+        .where({chat : msgid})
+        .del();
+
+        await DB('messages')
+        .where({owner : email,id : msgid})
+        .del();
+
+        res.sendStatus(200);
+    }catch(e){
+        console.log("could not delete message",e);
+        res.sendStatus(500);
+    }
+})
+
+//upload message
+app.post('/message',AuthReq,async (req,res)=>{
+    //save message if a message was sent
+    try{
+        const chat = req.body.chat //chat id
+        const date = req.body.date //number time (stored as string)
+        const email = req.AUTH.email //email 
+        const role = req.body.role;
+        const text = req.body.text;
+        console.log(`received ${text} from ${role}`)
+
+        const [entry] = await DB('messages')
+        .insert({owner : email,date : date,chat : chat,role:role,text : text})
+        .returning('*')
+
+        req.CHAT = entry;
+
+        return res.status(200).send(JSON.stringify({
+            id : entry.id,
+            date : date
+        }))
+    }catch(e){
+        console.log("error when uploading message",e);
+        res.sendStatus(500);
+    }
+})
+
+//upload message file
+app.post('/message/:id',AuthReq,async (req,res,next)=>{
+    try{
+        //save message if a message was sent
+        const chat = req.params.id //chat id
+        const email = req.AUTH.email //email 
+        console.log(chat,email);
+
+        const [entry] = await DB('messages')
+        .select('*')
+        .where({owner : email,id : chat})
+        console.log(entry);
+
+        req.CHAT = entry;
+
+        next()
+    }catch(e){
+        console.log("error uploading file message",e);
+        res.sendStatus(500);
+    }
+},FileParams,storage.any(),(req,res)=>{
+    res.sendStatus(200);
+})
+//upload message file ai
+app.post('/ai/message/:id',AuthReq,async (req,res,next)=>{
+    try{
+        //save message if a message was sent
+        const chat = req.params.id //chat id
+        const email = req.AUTH.email //email 
+        console.log(chat,email);
+
+        const [entry] = await DB('messages')
+        .select('*')
+        .where({owner : email,id : chat})
+        console.log(entry);
+        req.AI = true
+        req.CHAT = entry;
+
+        next()
+    }catch(e){
+        console.log("error uploading file message",e);
+        res.sendStatus(500);
+    }
+},FileParams,storage.any(),(req,res)=>{
+    res.sendStatus(200);
+})
+/**
+ * Route for chats
+*/
+
+app.post('/chats/create',AuthReq,async (req,res)=>{
+    //owner date directory
+    const adir = getRandomNumbers();
+    const adate = req.body.date;
+    const chatname = req.body.name;
+
+    try{
+        //create the folder
+        fs.mkdirSync(path.join(UPLOADDIRECTORY,adir),{recursive : false});
+
+        await DB('chats')
+        .insert({
+            owner : req.AUTH.email,
+            date : adate,
+            directory : adir,
+            name : chatname
+        })
+        res.sendStatus(200);
+    }catch(e){
+        console.log("create chat",e);
+        res.sendStatus(500);
+    }
+})
+app.post('/chats/delete',AuthReq,async (req,res)=>{
+    const chatid = req.body.id;
+    //delete the chat, delete the file
+    try{
+        const [entry] = await DB('chats')
+        .select('*')
+        .where({
+            id : chatid,
+            owner : req.AUTH.email
+        })
+        //delete the folder
+        fs.rmSync(path.join(UPLOADDIRECTORY,entry.directory),{force : false,recursive : true});
 
 
-//get all user chats
-app.get('/chatlist',AuthReq,(req,res)=>{
-    const res = DB('chats')
+        await DB('chats')
+        .where({
+            id : chatid
+        })
+        .del()
+        await DB('messages')
+        .where({
+            chat : chatid
+        })
+        .del()
+
+        res.sendStatus(200);
+    }catch(e){
+        res.sendStatus(500);
+        console.log("couldn't delete chat",e);
+    }
+})
+app.get('/chats',AuthReq,async (req,res)=>{
+
+    const entries = await DB('chats')
     .select('*')
-    .where({owner : req.AUTH.email})
-    .then((rows)=>{
-        return rows;
+    .where({
+        owner : req.AUTH.email
     })
-    .catch(()=>{
-        return null;
-    })
-    if(!res) return res.statusMessage('failed to fetch').sendStatus(500);
 
-    res.statusCode(200).send(res);
+    res.send(JSON.stringify(entries));
 })
+app.get('/config',AuthReq,(req,res)=>{
+    res.sendFile(CONFIG);
+})
+
+app.get('/file/:chatid/:fileid',AuthReq,async (req,res)=>{
+    const owner = req.AUTH.email;
+    const chatid = req.params.chatid;
+    const fileid = req.params.fileid;
+
+    try{
+        //make sure the person viewing owns the file
+        const ownership = await DB('chats')
+        .select('*')
+        .where({owner : owner,id : chatid})
+
+        if(!ownership.length) return res.sendStatus(403);
+        const chatowner = ownership[0]
+        //send the file
+        const [afile] = await DB('files')
+        .select('*')
+        .where({id : fileid})
+
+        const fp = path.join(DATADIRECTORY,chatowner.directory,afile.file);
+        res.sendFile(fp);
+    }catch(e){
+        res.sendStatus(500);
+    }
+})
+
+const PythonProccess = {
+
+}
+
 
 wss.on('connection',(asock)=>{
-    asock.on('message',(data,isbin)=>{
+    asock.on('message',async (data,isbin)=>{
+        //first message must be authentication token.
         //it is binary
         const msg = Buffer.from(data).toString();
+        //try to authenticate
+        if(!asock.Authenticated){
+            try {
+                const verified = jwt.verify(msg,TOKEN_SECRET,{});
+                asock.AUTH = {
+                    email : verified.email
+                }
+                asock.Authenticated = true;
+                asock.TOKEN = msg;
+
+                return;
+            }catch(e){
+                asock.close();
+                console.log("no token",e);
+            }
+        }
+
         let json;
+
         try{
             json = JSON.parse(msg);
         }catch(e){
-            //recieved a back message
+            //recieved a bad message
+            console.log("could parse json",e);
         }
+
         if(!json) return;
+        
         //json should adhere to this principle
-        console.log(json);
+        if(json.msg == "start"){            
+            const chatid = json.chatid;
+            const config = json.config;
+            const env = config.env;
+            const model = config.source;
+            const project= json.project;
+
+            //start a python session
+            const token = getRandomNumbers();
+            
+            PythonProccess[token] = {
+                client : asock,
+                chatid : chatid,
+                config : config,
+                project : project
+            }
+            const wsloc = `ws://localhost:${port}`
+            const sloc = `http://localhost:${port}`;
+
+            const proc = await comjs.SpawnProcess(config,sloc,wsloc,asock.TOKEN,token);
+            
+            PythonProccess[token].process = proc;
+
+            proc.on('error',(e)=>{
+                console.log("Socket Error",e);
+            })
+
+            proc.on('close',()=>{
+                EndMessage(token);
+            })
+            
+            asock.send(JSON.stringify({msg : "start",token : token}));
+        }else if(json.msg == "end"){
+            const token = json.token;
+            EndMessage(token);
+        }else if(json.msg == "python"){
+            const token = json.token;
+            const pckg = PythonProccess[token]
+            const id = pckg.chatid;
+            const config = pckg.config;
+            const project = pckg.project;
+
+            let projfiles = [];
+            if(project){
+                const adir = path.join(DATADIRECTORY,project.directory);
+                const entities = fs.readdirSync(adir,{encoding : 'utf-8',withFileTypes : true});
+                const files = entities.filter((itm)=>itm.isFile()).map((itm)=>({
+                    name : itm.name
+                }));
+                files.forEach((itm)=>{
+                    const ap = path.join(adir,itm);
+                    const textdata = fs.readFileSync(ap);
+                    projfiles.push({file : itm,data : textdata})
+                })
+            }
+            
+            const retpack = {
+                config : config,
+                msgs : [],
+                id : id,
+                files : projfiles
+            };
+            
+            //this returns message with files
+            try{
+                const msgid = id
+
+                //get all messages for that chat
+                let msgs = await DB('messages')
+                .select("*")
+                .where({chat : msgid})
+
+                msgs = msgs.map((itm)=>({...itm,date : Number(itm.date)}))
+
+                //get all the files for that message | files (chat) is mislabeled. Should be message
+                const prms = msgs.map((itm)=>DB('files').select('*').where({chat : itm.id}))
+                const files = await Promise.all(prms);
+
+
+                //zip the files if any along with the message
+                const zipped = msgs.map((itm,i)=>({files : files[i],msg : itm}));
+                const sorted = zipped.toSorted((a,b)=>a.msg.date - b.msg.date);
+                //sort them and then send
+                retpack.msgs = sorted;
+                //send chat history
+                asock.send(JSON.stringify(retpack))
+
+            }catch(e){
+                console.log("could not fetch message for python socket",e);
+                return
+            }
+        }else if(json.msg == "Get From"){
+            //update the front end that there are new changes
+            const token = json.token;
+            const date = json.date;
+            const pckg = PythonProccess[token]
+            pckg.client.send(JSON.stringify({
+                msg : "Get From",
+                date : date
+            }))
+        }else if(json.msg == "Update"){
+            const token = json.token;
+            const pckg = PythonProccess[token]
+            pckg.client.send(JSON.stringify({
+                msg : "Update",
+                data : json.data
+            }))
+        }
 
     })
 })
+function EndMessage(token){
+    const pckg = PythonProccess[token];
+    if(!pckg) return;
+    /**@type {ChildProcess} */
+    const child = pckg.process;
+    comjs.Kill(child);
+    
+    const sock = pckg.client;
+
+    sock.send(JSON.stringify({
+        msg : 'end'
+    }))
+    
+    delete PythonProccess[token]
+}
 
 
 async function run(){
 
     await DatabaseCheck();
+    await SetupWorkingEnvironment();
 
 
     const server = app.listen(port);
     
     server.on('upgrade',async (req,sock,head)=>{
-        //set socket flag
-        req.is_socket_request = true;
-        //authenticate    
-        const isvald = await AuthReq(req);
-        //destroy if not auth
-        if(!isvald) return sock.destroy();
-
         //connect
         wss.handleUpgrade(req,sock,head,(ws)=>{
+            ws.Authenticated = false;
             wss.emit('connection',ws,req);
         })
     })

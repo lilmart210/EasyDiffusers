@@ -23,8 +23,4 @@ dist-ssr
 *.sw?
 
 # folders
-Volume/Environments/*
-Volume/Data/*
-Volume/Models/*
-!Volume/Models/Helper.py
-Volume/Uploads/*
+Volume

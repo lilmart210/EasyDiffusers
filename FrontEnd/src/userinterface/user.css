@@ -4,6 +4,7 @@
     width : 100vw;
     height: 100vh;
     overflow: hidden;
+    position: relative;
 }
 
 .UserInterface .HoverButton{
@@ -36,9 +37,38 @@
     margin-bottom: 10px;
 }
 
-.UserInterface .List {
+
+.List {
     display: flex;
     flex-direction: column;
+    flex : 1;
+    gap : 5px;
+    overflow: hidden;
+    overflow-y: auto;
+}
+.List .Selected {
+    background-color: rgba(255, 217, 0, 0.345);
+}
+.List button:not(:last-child),.List.NoAdd button {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.List button > span {
+    margin-right: 10px;
+    width : 20px;
+}
+.List button > span:hover{
+    background-color: gold;
+    color : black;
+    border-radius: 3px;
+} 
+
+.List div {
+    display: flex;
+    flex-direction: row;
+}
+.List div > :nth-child(2){
     flex : 1;
 }
 .UserInterface .Container {
@@ -108,11 +138,53 @@
     flex : 1;
     width : calc(min(100%,50rem));
     overflow-y : auto;
+    min-height : calc(100% - 50rem);
+    gap : 10px;
+    padding-right : 10px;
+}
+.UserInterface .Chat > .ChatList  * {
 
 }
+
+.ChatMessage {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: left;
+}
+.ChatMessage.user {
+    align-items: start;
+    position: relative;
+    border-bottom: 1px solid rgba(100, 100, 100, 0.226);
+}
+
+.ChatMessage .ChatButtons {
+    display: flex;
+    font-size: xx-small;
+    color : gray;
+    gap : 5px;
+    width : 100%;
+    justify-content: left;
+    align-items: center;
+    height : 2rem;
+}
+.ChatMessage .ChatButtons > * {
+    background-color: transparent;
+    border: none;
+}
+
+.ChatMessage .ChatButtons button:hover {
+    background-color: gray;
+    border-radius: 4px;
+}
+
+.UserInterface .Chat > .ChatList > :last-child {
+    padding-bottom: 10rem;
+}
+
+
 .UserInterface .Chat > .ChatList > :nth-child(2n) {
     display: flex;
-    flex : 1;
     width : 100%;
     align-self: flex-start;
     justify-self: end;
@@ -120,7 +192,6 @@
 
 .UserInterface .Chat > .ChatList> :nth-child(2n + 1) {
     display: flex;
-    flex : 1;
     width : 100%;
     align-self: flex-end;
 }
@@ -137,6 +208,10 @@
     background-color: rgba(128, 128, 128, 0.455);
     border-radius: 10px;
     gap : 5px;
+    
+}
+.Input.NotEditable {
+    background-color: rgba(0, 0, 0, 0.453);
 }
 .UserInterface .Input > .InputField {
     width : calc(100% - max(15rem,25%));
@@ -253,4 +328,81 @@ UploadVideoContainer *::-webkit-media-controls {
     text-align: center;
     display: flex;
     aspect-ratio: 1/1;
+}
+
+.NewChat{
+    content : ' ';
+    position: absolute;
+    width : 100vw;
+    height : 100vh;
+    left : 0;
+    top : 0;
+    background-color: rgba(0, 0, 0, 0.586);
+}
+
+.NewChat > form {
+    display: flex;
+    position: absolute;
+    left : calc(50vw - 10rem);
+    top : calc(50vh - 10rem)    ;
+    background-color: #646cffaa;
+    width : 20rem;
+    height : 20rem;
+    flex-direction: column;
+    border-radius: 10px;
+}
+.NewChat > form > :first-child{
+    margin-top: 10px;
+}
+.NewChat> form > :last-child{
+    margin-top: auto;
+    margin-bottom: 10px;
+}
+
+.UploadSpace {
+    width : 90%;
+    aspect-ratio: 1/1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: aliceblue;
+}
+.UploadProjectFiles {
+    background-color: rgba(0, 0, 0, 0.347);
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    width : 30rem;
+    height : 30rem;
+    left : calc(50% - 15rem);
+    top : calc(50% - 15rem);
+    justify-content: center;
+    align-items: center;
+    height : 30rem;
+}
+
+.UploadProjectFiles > :first-child {
+    margin-top: 10px;
+}
+.UploadProjectFiles > :last-child {
+    margin-bottom: 10px;
+    margin-top: auto;
+}
+.UploadProjectFiles .HiddenUpload {
+    display: none;
+}
+.ProjectMedia {
+    display: flex;
+    flex-direction: row;
+    width : 100%;
+    height : 100%;
+    width : calc(min(100%,50rem));
+    margin-bottom: 5px;
+    gap : 5px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    flex-wrap: wrap;   
+}
+.ProjectMedia > .UploadVideoContainer {
+    height : 6rem;
 }
