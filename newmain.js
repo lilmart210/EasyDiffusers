@@ -325,12 +325,22 @@ async function SetupWorkingEnvironment(){
     !fs.existsSync(CACHEDIRECTORY) && fs.mkdirSync(CACHEDIRECTORY,{recursive : true})
     !fs.existsSync(UPLOADDIRECTORY) && fs.mkdirSync(UPLOADDIRECTORY,{recursive : true})
     !fs.existsSync(ENVIRONMENTSDIRECTORY) && fs.mkdirSync(ENVIRONMENTSDIRECTORY,{recursive : true});
-    !fs.existsSync(CONFIG) && fs.writeFileSync(CONFIG,'[]',{encoding : 'utf-8'});
 
-    if(!fs.existsSync(path.join(MODELDIRECTORY,'Helper.py'))){     
+    if(!fs.existsSync(CONFIG)){
+        const localconfig = fs.readFileSync(path.join(__dirname,'config.json'),{encoding : 'utf-8'});
+        fs.writeFileSync(CONFIG,localconfig,{encoding : 'utf-8'});
+    } 
+
+    if(!fs.existsSync(path.join(MODELDIRECTORY,'Helper.py'))){
         const data = fs.readFileSync(path.join(__dirname,'Helper.py'),{encoding : 'utf-8'});
         fs.writeFileSync(path.join(MODELDIRECTORY,'Helper.py'),data,{encoding : 'utf-8'});
     }
+    if(!fs.existsSync(path.join(MODELDIRECTORY,'anime.py'))){
+        const data = fs.readFileSync(path.join(__dirname,'anime.py'),{encoding : 'utf-8'});
+        fs.writeFileSync(path.join(MODELDIRECTORY,'anime.py'),data,{encoding : 'utf-8'});
+    }
+    
+
 }
 
 // authentication
@@ -448,10 +458,10 @@ async function RegisterAuth(req,res,next){
     }
 }
 
-app.use(express.static(path.join(__dirname,'FrontEnd','dist')));
+app.use(express.static(path.join(__dirname,'build')));
 
 app.get('/',(req,res)=>{
-    res.sendFile(path.join(__dirname,'FrontEnd','dist','index.html'));
+    res.sendFile(path.join(__dirname,'build','index.html'));
 })
 //routes
 app.post('/login',LoginAuth);
