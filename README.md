@@ -8,7 +8,13 @@ Refer to the video in order to see an example
 ### Provides a convenient way to interact with ml models
 
 ## Getting Started | How To  
-> example command `docker run -dit --name diffusers2 -e PLATFORM="LINUX" -p 4809:7377 --mount type=bind,source="$(pwd)",target=/app/Volume mrmartinwatson/easydiff:v1`
+> example command `docker run -dit --gpus all --name diffusers2 -e PLATFORM="LINUX" -p 4809:7377 --mount type=bind,source="$(pwd)",target=/app/Volume mrmartinwatson/easydiff:v1`  
+> when resusing old docker files, make sure you chmod the volume folder and all of its children  
+> these packages need to be installled  
+> pip install websockets  
+> pip install diffusers["torch"] transformers  
+> pip install torch torchvision torchaudio  
+> pip install accelerate  
 
 ### Build Docker
 

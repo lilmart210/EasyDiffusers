@@ -25,7 +25,7 @@ function GetVMPath(config){
     }else if(PLATFORM == 'LINUX'){
         venvpath = `. ${path.join(venvpath,'bin','activate')}`
     }
-    return `"${venvpath}"`;
+    return `${venvpath}`;
 }
 
 function CreateVenvString(config){

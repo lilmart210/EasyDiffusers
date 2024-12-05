@@ -101,7 +101,7 @@ def GetMessageFiles(chat : int, msg : dict):
         "Authorization" : f"Bearer {TOKEN}",
     }
     for i in range(len(f)): 
-        addr = f"{SERVER_LOCATION}/file/{chat}/{f[i]["id"]}"
+        addr = f'{SERVER_LOCATION}/file/{chat}/{f[i]["id"]}'
 
         response = requests.get(addr,headers=auth,stream=True)
         img = Image.open(BytesIO(response.content))
