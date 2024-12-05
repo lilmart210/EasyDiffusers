@@ -22,12 +22,12 @@ Refer to the video in order to see an example
 2. Skip steps 3 if you don't intend on modifying source code
 3. `npm install` in base repository directory
 4. `cd FrontEnd` and run `npm install`. then run `npm run build` and Return to the root directory using `cd ..`
-5. run `docker build -t <a-name> ./` substitute a-name for whatever you want. I use easydiff
-
+5. run `docker build -t <mrmartinwatson/easydiff:v1> ./` substitute a-name for whatever you want. I use easydiff  
+> docker push mrmartinwatson/easydiff:v1
 If no errors than you have successfully built the image  
 > This Communicates over https, so make sure you are prefixing `https://<ipaddress:port>/`  
 > to push to docker `docker push -t <your name>:<your tag> ./  
-
+> to pull official docker pull mrmartinwatson/easydiff:v1
 ### Setup the container
 
 This image Communicates on the Port 7377. Remap it if you want to 
