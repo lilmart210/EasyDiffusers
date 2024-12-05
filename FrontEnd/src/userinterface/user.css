@@ -425,8 +425,35 @@ UploadVideoContainer *::-webkit-media-controls {
 .Selectable:hover{
     border : 1px solid white;
     border-radius: 10px;
-    cursor: grab;
+    cursor: pointer;
 }
 .Selectable > *{
     width : 100%;
+}
+
+.Dark{
+    display: flex;
+    position: absolute;
+    justify-content: center;
+    align-items: center;
+    width : 100vw;
+    height : 100vh;
+    background-color: rgba(0, 0, 0, 0.648);
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+.Dark * {
+    display: flex;
+    object-fit: fill;
+    max-width : 100% !important;
+    max-height : 100% !important;
+    width : 70% !important;
+    padding: 0;
+    margin: 0;
+    justify-content: center;
+    align-items: center;
+}
+.Dark *:hover {
+    border : none;
+    cursor: auto;
 }

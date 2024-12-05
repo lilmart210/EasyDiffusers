@@ -123,8 +123,10 @@ export function UserInterface(){
     const [ScrollAtBottom,SetScrollAtBottom] = useState(true);
 
     const [UpdateMessage,SetUpdateMessage] = useState('');
+    const [LargeMedia,SetLargeMedia] = useState<File>();
     const SelectedChatRef = useRef(SelectedChat)
     const ScrollHeightRef = useRef(0)
+    
 
     useEffect(()=>{
         
@@ -526,6 +528,9 @@ export function UserInterface(){
         GetProjectFiles();
     }
     async function DeleteChat(idx : number){
+        const yes = confirm(`Are you sure you you want to chat ${Chats[idx].name}`)
+        if(!yes) return;
+
         const achat = Chats[idx];
         //delete the chat
         const res = await MyFetch('/chats/delete',{
@@ -558,6 +563,8 @@ export function UserInterface(){
     }
     
     async function DeleteProject(idx : number){
+        const yes = confirm(`Are you sure you you want to delete ${Projects[idx].name}`)
+        if(!yes) return;
         //delete the project
         const project = Projects[idx]
         const res = await MyFetch('/project/delete',{
@@ -697,12 +704,12 @@ export function UserInterface(){
                                                         //if(k == h.length - 1) ScrollToBottom();
                                                         return MyFetch(`/file/${selchat}/${ktm.id}`)
                                                     }
-                                                    return <ChatDisplay key={k} src={getsource}/>
+                                                    return <ChatDisplay key={k} src={getsource} onClick={SetLargeMedia}/>
                                                 })
                                             }
                                         </div>
                                         <div className='ChatButtons'>
-                                            <label>{dt.toString()}</label>
+                                            <label>{dt.toLocaleString()}</label>
                                             <span className={`Span-${itm.msg.role}`}>{`(${itm.msg.role})`}</span>
                                             <button onClick={()=>SelectedChat && RemoveMessage(SelectedChat,itm)}>{`\u{1F5D1}`}</button>
 
@@ -849,6 +856,14 @@ export function UserInterface(){
                     </div>
                 ) 
             }
+            {
+                LargeMedia && (
+                    <div className='Dark' onClick={(e)=>{e.preventDefault();e.stopPropagation();SetLargeMedia(undefined)}}>
+                        <ChatDisplay file={LargeMedia}/>
+                    </div>
+
+                )
+            }
 
         </div>
     )
@@ -962,40 +977,62 @@ const mime_types :{[name : string] : any} = {
     '.mov': 'video/quicktime'
 }
 type ChatDisplay = {
-    src : ()=>Promise<Response> | undefined
-    onClose? : Function
+    src? : ()=>Promise<Response> | undefined
+    onClose? : Function,
+    file? : File,
+    onClick? : Function
 }
   
 function ChatDisplay(props : ChatDisplay){
-const [VideoHover,SetVideoHovering] = useState(false);
-const [prefix,setprefix] = useState('');
-const vidref = useRef<HTMLVideoElement>(null);
-const [source,setsource] = useState<File>();
+    const [VideoHover,SetVideoHovering] = useState(false);
+    const [prefix,setprefix] = useState('');
+    const vidref = useRef<HTMLVideoElement>(null);
+    const [source,setsource] = useState<File>();
 
-useEffect(()=>{
-    const src = props.src()
-    if(!src) return;
-
-    src.then(async (res)=>{
-        if(res.status != 200) return;
-        const blob = await res.blob();
-        const file = new File([blob], "file", { type: blob.type });
+    useEffect(()=>{
+        if(!props.file) return;
+        const file = props.file
         const sp = file.type.split('/')
 
         setprefix(sp[0])
         setsource(file);
-    })
-},[props.src])
+    },[props.file])
 
-return (
-    <div className='Selectable'>
-        {prefix == 'image' && <img className='' src={source && URL.createObjectURL(source)}></img>} 
-        {prefix == 'video' &&
-            <video ref={vidref} className=''>
-            <source src={source && URL.createObjectURL(source)} type={source && source.type}></source>
-            </video>
-        }
-        {(prefix != 'image' && prefix != 'video') && <object className='' data={source && URL.createObjectURL(source)} type={source && source.type}/>}
-    </div>
-)
+    useEffect(()=>{
+        if(!props.src) return;
+
+        const src = props.src()
+        if(!src) return;
+
+        src.then(async (res)=>{
+            if(res.status != 200) return;
+            const blob = await res.blob();
+            const file = new File([blob], "file", { type: blob.type });
+            const sp = file.type.split('/')
+
+            setprefix(sp[0])
+            setsource(file);
+        })
+    },[props.src])
+    
+
+    function MakeBig(){
+
+    }
+
+    function Click(){
+        if(props.onClick && source) props.onClick(source);
+    }
+
+    return (
+        <div className='Selectable' onMouseDown={MakeBig} onClick={Click}>
+            {prefix == 'image' && <img className='' src={source && URL.createObjectURL(source)}></img>} 
+            {prefix == 'video' &&
+                <video ref={vidref} className=''>
+                <source src={source && URL.createObjectURL(source)} type={source && source.type}></source>
+                </video>
+            }
+            {(prefix != 'image' && prefix != 'video') && <object className='' data={source && URL.createObjectURL(source)} type={source && source.type}/>}
+        </div>
+    )
 }
