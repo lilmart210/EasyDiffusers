@@ -151,6 +151,17 @@ export function UserInterface(){
 
     },[SelectedConfig])
     useEffect(()=>{
+
+    },[SelectedConfig])
+    function TryLoadConfig(){
+        if(!SelectedConfig) return;
+        const loded = localStorage.getItem(SelectedConfig.name)
+        
+        return ()=>{
+            //localStorage.setItem(SelectedConfig)
+        }
+    }
+    useEffect(()=>{
         if(SelectedChat == undefined){
             SetChatMessages([]);
             SetScrollAtBottom(true);

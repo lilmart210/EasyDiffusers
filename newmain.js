@@ -965,7 +965,7 @@ wss.on('connection',(asock)=>{
                 files.forEach((itm)=>{
                     const ap = path.join(adir,itm.name);
                     const textdata = fs.readFileSync(ap,{encoding : 'utf-8'});
-                    projfiles.push({name : itm.name,text : textdata})
+                    projfiles.push({name : itm.name,text : textdata,project : project.name})
                 })
             }
             
