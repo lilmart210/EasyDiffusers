@@ -1,14 +1,13 @@
 [
     {
-        "name" : "ClassicAnime",
-        "type" : "text2image",
+        "name" : "Anime",
         "source" : "anime.py",
         "options" : [
             {
                 "name" : "inference",
                 "default" : 20,
                 "type" : "select",
-                "selection" : [5,10,20,40,100,200]
+                "selection" : [10,20,30,40]
             },
             {
                 "name" : "count",
@@ -24,19 +23,10 @@
             },
             {
                 "name" : "negatives",
-                "default":"extra arms",
+                "default" : "extra arms",
                 "type" : "string"
             }
         ],
-        "allowImages" : false,
-        "env" : "default"
-    },
-    {
-        "name" : "FlanBase",
-        "type" : "text2text",
-        "source" : "flanbase.py",
-        "options" : [],
-        "allowImages" : false,
         "env" : "default"
     }
 ]

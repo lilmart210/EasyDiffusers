@@ -28,11 +28,5 @@
             }
         ],
         "env" : "default"
-    },
-    {
-        "name" : "Flan",
-        "source" : "flan.py",
-        "options" : [],
-        "env" : "default"
     }
 ]

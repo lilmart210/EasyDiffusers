@@ -7,6 +7,8 @@ const PLATFORM = process.env.PLATFORM //WINDOWS | LINUX
 const VOLUMEDIRECTORY = path.join(__dirname,'Volume'); //volume for this project
 const ENVIRONMENTSDIRECTORY = path.join(VOLUMEDIRECTORY,'Environments');//python environments
 const MODELDIRECTORY = path.join(VOLUMEDIRECTORY,'Models');
+const CACHEDIRECTORY = path.join(VOLUMEDIRECTORY,"CACHE");
+
 
 /**
  * 
@@ -45,7 +47,10 @@ async function SpawnProcess(config,...args){
     //the child process will make a websocket connection to main and do stuff
     
     const proc = spawn(oc,[pymain,...args],{
-        env : process.env,
+        env : {
+            ...process.env,
+            "HF_HOME" : CACHEDIRECTORY
+        },
         shell : shell,
         detached : false,
         stdio : 'inherit',

@@ -210,9 +210,14 @@
     gap : 5px;
     
 }
+
+.Input:-moz-drag-over {
+    background-color: rgba(36, 34, 122, 0.636);
+}
 .Input.NotEditable {
     background-color: rgba(0, 0, 0, 0.453);
 }
+
 .UserInterface .Input > .InputField {
     width : calc(100% - max(15rem,25%));
     text-align: start;
@@ -221,6 +226,9 @@
 }
 .UserInterface .Input > .InputField:focus{
     outline: none;
+}
+.InputField {
+    white-space: pre-line;
 }
 
 .UserInterface .Input > .ButtonContainer {
@@ -405,4 +413,20 @@ UploadVideoContainer *::-webkit-media-controls {
 }
 .ProjectMedia > .UploadVideoContainer {
     height : 6rem;
+}
+
+.Selectable {
+    display: flex;
+    overflow: hidden;
+    max-width : 20rem;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+.Selectable:hover{
+    border : 1px solid white;
+    border-radius: 10px;
+    cursor: grab;
+}
+.Selectable > *{
+    width : 100%;
 }

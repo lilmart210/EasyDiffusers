@@ -1,7 +1,7 @@
-import { ChangeEvent, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ChangeEvent, DragEventHandler, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import './user.css'
 import { AuthContext, prefix } from '../protected/authenticate';
-
+import ReactMarkdown from 'react-markdown'
 
 export type Chat = {
     date :  string, // number date.now()
@@ -448,7 +448,9 @@ export function UserInterface(){
 
     async function InputDown(e : React.KeyboardEvent<HTMLDivElement>){
         const issubmit = e.key == "Enter" && !e.shiftKey;
-        if(!issubmit) return;
+        if(!issubmit) {
+            return;
+        };
         e.preventDefault();
         SendMessage();
     }
@@ -610,13 +612,18 @@ export function UserInterface(){
         }
       }
     
-      function SetSelectValue(e : React.ChangeEvent<HTMLSelectElement>){
+    function SetSelectValue(e : React.ChangeEvent<HTMLSelectElement>){
         const newval = e.currentTarget.value;
         const aname = e.currentTarget.name;
 
         UpdateOption(aname,newval);
-      }
-    
+    }
+    function DropedImage(e : React.DragEvent<HTMLDivElement>){
+        e.preventDefault();
+        const files  = e.dataTransfer.files;
+        SetUploadedFiles(prev=>[...prev,...files]);
+    }
+
 
     let ChatPanelName = `ChatPanel`
     if(!ShowChats) ChatPanelName += ' Hidden'
@@ -677,18 +684,20 @@ export function UserInterface(){
                                 const dt = new Date(itm.msg.date);
                                 return (
                                     <div key={i} className={`ChatMessage ${itm.msg.role}`}>
-                                        <p className={itm.msg.role}>
-                                            {itm.msg.text}
-                                        </p>
+                                        <ReactMarkdown className={itm.msg.role}>{itm.msg.text}</ReactMarkdown>
+                                        
                                         <div className='ChatMedia'>
                                             {
-                                                itm.files.map((ktm,k)=>{
+                                                itm.files.map((ktm,k,h)=>{
                                                     const me = ktm.file.split('.');
                                                     const ext = me[1];
-
-                                                    if(ext == 'mp4')
-
-                                                    return false;
+                                                    const getsource = ()=>{
+                                                        if(!SelectedChat) return;
+                                                        const selchat = SelectedChat.id
+                                                        //if(k == h.length - 1) ScrollToBottom();
+                                                        return MyFetch(`/file/${selchat}/${ktm.id}`)
+                                                    }
+                                                    return <ChatDisplay key={k} src={getsource}/>
                                                 })
                                             }
                                         </div>
@@ -712,6 +721,7 @@ export function UserInterface(){
                                 <p>{UpdateMessage}</p>
                             )
                         }
+                        <div></div>
                 </div>
                 {UploadedFiles.length != 0 && (
                     <div className='MediaContent'>
@@ -723,7 +733,7 @@ export function UserInterface(){
                 }
                 
                 <div className={`Input ${((SelectedChat == undefined) || WaitingResponse) && 'NotEditable'}`}>
-                    <div className={`InputField`} contentEditable={(SelectedChat != undefined) && !WaitingResponse} onKeyDown={InputDown} ref={TextInputRef}></div>
+                    <div className={`InputField`} onDragOver={(e)=>e.preventDefault()}onDrop={DropedImage} contentEditable={(SelectedChat != undefined) && !WaitingResponse} onKeyDown={InputDown} ref={TextInputRef}></div>
 
                     <div className='ButtonContainer'>
                         <input onChange={AddFiles} type='file' multiple ref={FileInputRef} className='Hide'/>
@@ -919,4 +929,73 @@ function MakeSocket(callback : (data : MessageEvent)=>any){
         send,
         LockToken
     }
+}
+
+const mime_types :{[name : string] : any} = {
+    '.txt': 'text/plain',
+    '.html': 'text/html',
+    '.htm': 'text/html',
+    '.css': 'text/css',
+    '.js': 'text/javascript',
+    '.json': 'application/json',
+    '.xml': 'application/xml',
+    '.pdf': 'application/pdf',
+    '.doc': 'application/msword',
+    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    '.xls': 'application/vnd.ms-excel',
+    '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    '.ppt': 'application/vnd.ms-powerpoint',
+    '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    '.zip': 'application/zip',
+    '.rar': 'application/x-rar-compressed',
+    '.tar.gz': 'application/gzip',
+    '.7z': 'application/x-7z-compressed',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.png': 'image/png',
+    '.gif': 'image/gif',
+    '.svg': 'image/svg+xml',
+    '.mp3': 'audio/mpeg',
+    '.wav': 'audio/wav',
+    '.mp4': 'video/mp4',
+    '.avi': 'video/x-msvideo',
+    '.mov': 'video/quicktime'
+}
+type ChatDisplay = {
+    src : ()=>Promise<Response> | undefined
+    onClose? : Function
+}
+  
+function ChatDisplay(props : ChatDisplay){
+const [VideoHover,SetVideoHovering] = useState(false);
+const [prefix,setprefix] = useState('');
+const vidref = useRef<HTMLVideoElement>(null);
+const [source,setsource] = useState<File>();
+
+useEffect(()=>{
+    const src = props.src()
+    if(!src) return;
+
+    src.then(async (res)=>{
+        if(res.status != 200) return;
+        const blob = await res.blob();
+        const file = new File([blob], "file", { type: blob.type });
+        const sp = file.type.split('/')
+
+        setprefix(sp[0])
+        setsource(file);
+    })
+},[props.src])
+
+return (
+    <div className='Selectable'>
+        {prefix == 'image' && <img className='' src={source && URL.createObjectURL(source)}></img>} 
+        {prefix == 'video' &&
+            <video ref={vidref} className=''>
+            <source src={source && URL.createObjectURL(source)} type={source && source.type}></source>
+            </video>
+        }
+        {(prefix != 'image' && prefix != 'video') && <object className='' data={source && URL.createObjectURL(source)} type={source && source.type}/>}
+    </div>
+)
 }

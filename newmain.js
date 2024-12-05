@@ -63,7 +63,7 @@ const upload = multer.diskStorage({
         const aname = req.UPLOAD.chat ? `${getRandomNumbers()}.${ext}` : oname;
         //two different file uploads
         //insert file into files table if a chat message
-        if(req.UPLOAD.chat != undefined){
+        if(req.UPLOAD.chat){
             //create name and add to files
             await DB('files')
             .insert({
@@ -511,6 +511,33 @@ app.get('/project/files/:id',AuthReq,async(req,res)=>{
         res.sendStatus(500);
     }
 })
+//get all file data for a project
+app.post('/project/get/files',AuthReq,async(req,res)=>{
+    try{
+        const pid = req.body.id;
+        const [entry] = await DB('projects')
+        .select('*')
+        .where({id : pid,owner : req.AUTH.email})
+
+        const adir = path.join(DATADIRECTORY,entry.directory);
+        const entities = fs.readdirSync(adir,{encoding : 'utf-8',withFileTypes : true});
+        const files = entities.filter((itm)=>itm.isFile())
+        const data = files.map((itm)=>fs.readFile(path.join(adir,itm.name),{encoding : 'utf-8'}));
+        await Promise.all(data);
+        const arr = [];
+        for(let i = 0;i<data.length;i++){
+            arr.push({
+                name : files[i].name,
+                text : data[i]
+            })
+        }
+
+        res.send(arr);
+    }catch{
+        console.log("could not get files",e);
+        res.sendStatus(500);
+    }
+})
 //upload a file to a project
 app.post('/project/upload/:project',AuthReq,FileParams,storage.any(),async(req,res)=>{
     res.sendStatus(200);
@@ -681,7 +708,6 @@ app.post('/message',AuthReq,async (req,res)=>{
         const email = req.AUTH.email //email 
         const role = req.body.role;
         const text = req.body.text;
-        console.log(`received ${text} from ${role}`)
 
         const [entry] = await DB('messages')
         .insert({owner : email,date : date,chat : chat,role:role,text : text})
@@ -705,12 +731,10 @@ app.post('/message/:id',AuthReq,async (req,res,next)=>{
         //save message if a message was sent
         const chat = req.params.id //chat id
         const email = req.AUTH.email //email 
-        console.log(chat,email);
 
         const [entry] = await DB('messages')
         .select('*')
         .where({owner : email,id : chat})
-        console.log(entry);
 
         req.CHAT = entry;
 
@@ -728,12 +752,10 @@ app.post('/ai/message/:id',AuthReq,async (req,res,next)=>{
         //save message if a message was sent
         const chat = req.params.id //chat id
         const email = req.AUTH.email //email 
-        console.log(chat,email);
 
         const [entry] = await DB('messages')
         .select('*')
         .where({owner : email,id : chat})
-        console.log(entry);
         req.AI = true
         req.CHAT = entry;
 
@@ -835,7 +857,7 @@ app.get('/file/:chatid/:fileid',AuthReq,async (req,res)=>{
         .select('*')
         .where({id : fileid})
 
-        const fp = path.join(DATADIRECTORY,chatowner.directory,afile.file);
+        const fp = path.join(UPLOADDIRECTORY,chatowner.directory,afile.file);
         res.sendFile(fp);
     }catch(e){
         res.sendStatus(500);
@@ -886,7 +908,7 @@ wss.on('connection',(asock)=>{
             const config = json.config;
             const env = config.env;
             const model = config.source;
-            const project= json.project;
+            const project = json.project;
 
             //start a python session
             const token = getRandomNumbers();
@@ -931,9 +953,9 @@ wss.on('connection',(asock)=>{
                     name : itm.name
                 }));
                 files.forEach((itm)=>{
-                    const ap = path.join(adir,itm);
-                    const textdata = fs.readFileSync(ap);
-                    projfiles.push({file : itm,data : textdata})
+                    const ap = path.join(adir,itm.name);
+                    const textdata = fs.readFileSync(ap,{encoding : 'utf-8'});
+                    projfiles.push({name : itm.name,text : textdata})
                 })
             }
             

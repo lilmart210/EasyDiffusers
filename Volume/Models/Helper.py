@@ -6,6 +6,8 @@ from io import BytesIO
 from websockets.sync.client import connect
 import asyncio
 import time
+from PIL import Image
+from io import BytesIO
 
 
 """
@@ -47,12 +49,15 @@ messages return type is
 
 """
 """
-project files return type
+Project files type
 
-Array<{
-name : string,
-data : string
-}>
+[
+    {
+        name : string,
+        text : string
+    },
+    ...
+]
 """
 
 
@@ -72,8 +77,37 @@ def Loop(proc):
         files = data["files"]#project files
         params = ZipConfig(config)
         #missing project files
+        
+        proc(ws,messages,chat,params,files)
 
-        proc(ws,data,config,messages,chat,params,files)
+def GetProjectFiles(project):
+    auth = {
+        "Authorization" : f"Bearer {TOKEN}",
+    }
+    body = {
+        "id" : project["id"]
+    }
+    
+    addr = f"{SERVER_LOCATION}/project/get/files"
+
+    response = requests.post(addr,headers=auth,json = body)
+    return response.json()
+
+def GetMessageFiles(chat : int, msg : dict):
+    f : list = msg["files"]
+    arr = []
+
+    auth = {
+        "Authorization" : f"Bearer {TOKEN}",
+    }
+    for i in range(len(f)): 
+        addr = f"{SERVER_LOCATION}/file/{chat}/{f[i]["id"]}"
+
+        response = requests.get(addr,headers=auth,stream=True)
+        img = Image.open(BytesIO(response.content))
+        arr.append(img)
+    
+    return arr
 
 def GetData(ws):
     """Gets the data from the server to begin initialization, initializes socket"""
@@ -106,6 +140,8 @@ def Update(ws,msg : str = ""):
     }))
 
 def SendChat(chat : int,date : int, msg : str,files = []):
+    """Sends a permanent chat message, does not terminate the session"""
+
     auth = {
         "Authorization" : f"Bearer {TOKEN}",
     }
