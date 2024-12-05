@@ -28,6 +28,7 @@ ADD build build
 # copy Back end
 COPY *.js ./
 COPY *.py ./
+COPY config.json ./
 
 
 EXPOSE 7377

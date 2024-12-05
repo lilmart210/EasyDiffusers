@@ -7,7 +7,8 @@ Refer to the video in order to see an example
 ### Meant to be an environment where you can use Diffusers or other ML pipelines outside of Jupyter Notebook  
 ### Provides a convenient way to interact with ml models
 
-## Getting Started | How To
+## Getting Started | How To  
+> example command `docker run -dit --name diffusers2 -e PLATFORM="LINUX" -p 4809:7377 --mount type=bind,source="$(pwd)",target=/app/Volume mrmartinwatson/easydiff:v1`
 
 ### Build Docker
 
@@ -106,4 +107,5 @@ To install the neccesary packages for anime.py, you need to first download diffu
 ### Pipeline
 In order to use this effectively, Once you have a model that you like. You drop the model into the `Models` folder. Then edt `config.json` to include your new model 
 
-## Env Variables
+## Env Variables (IMPORTANT)  
+> -e PLATFORM = "WINDOWS" | "LINUX" depending on the platform you use, you need to specify one of the other

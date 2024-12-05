@@ -139,7 +139,7 @@ async function FileParams(req,res,next){
 }
 
 app.use(express.json());
-app.use(express.urlencoded())
+app.use(express.urlencoded()) //deprecated? is this neccesary?
 app.use(cors({
     allowedHeaders : '*',
     methods : '*',
