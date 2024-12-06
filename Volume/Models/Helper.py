@@ -80,7 +80,7 @@ async def Run(func):
 
     try:
         await asyncio.gather(func())
-    except:
+    except asyncio.CancelledError:
         print("Task was cancelled")
 
 def Loop(proc):
@@ -93,9 +93,10 @@ def Loop(proc):
         files = data["files"]#project files
         params = ZipConfig(config)
         
-        proc = lambda : proc(ws,messages,chat,params,files)
+        proc2 = lambda : proc(ws,messages,chat,params,files)
         #run async to enable shutdown
-        asyncio.run(proc)
+        #asyncio.run(Run(proc2))
+        proc2()
 
 def GetProjectFiles(project):
     auth = {

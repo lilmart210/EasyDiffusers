@@ -54,16 +54,17 @@ async function SpawnProcess(config,...args){
         },
         shell : shell,
         detached : false,
-        stdio : ['ignore',process.stdout,'pipe'],
+        stdio : ['ignore','pipe','pipe'],
 
         cwd : MODELDIRECTORY
     })
-    proc.on('error',(e)=>{
-        console.log(e);
-    })
-    proc.on('message',(m)=>{
-        console.log(m);
-    })
+    proc.stdout.on('data', (data) => {
+        console.log(`stdout: ${data}`);
+    });
+    
+    proc.stderr.on('data', (data) => {
+        console.error(`stderr: ${data}`);
+    });
 
     return proc;
 }

@@ -147,6 +147,9 @@
 .UserInterface .Chat > .ChatList  * {
 
 }
+.ChatMessage .Selectable { 
+    min-height : 512px;
+}
 
 .ChatMessage > :first-child * {
     text-align: left;
