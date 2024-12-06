@@ -3,6 +3,7 @@ require('dotenv').config();
 const {spawn, exec, ChildProcess} = require("child_process");
 const path = require('path');
 
+
 const PLATFORM = process.env.PLATFORM //WINDOWS | LINUX
 const VOLUMEDIRECTORY = path.join(__dirname,'Volume'); //volume for this project
 const ENVIRONMENTSDIRECTORY = path.join(VOLUMEDIRECTORY,'Environments');//python environments
@@ -53,9 +54,15 @@ async function SpawnProcess(config,...args){
         },
         shell : shell,
         detached : false,
-        stdio : ['ignore','inherit','ignore'],
+        stdio : ['ignore',process.stdout,'pipe'],
 
         cwd : MODELDIRECTORY
+    })
+    proc.on('error',(e)=>{
+        console.log(e);
+    })
+    proc.on('message',(m)=>{
+        console.log(m);
     })
 
     return proc;
@@ -66,8 +73,11 @@ async function SpawnProcess(config,...args){
  */
 function Kill(child){
     const shell = PLATFORM == 'WINDOWS' ? true : '/bin/bash';
-    const cmd = PLATFORM == 'WINDOWS' ? `taskkill /PID ${child.pid}` : `kill -9 ${child.pid}`;
+    const cmd = PLATFORM == 'WINDOWS' ? `taskkill /pid ${child.pid}` : `kill -9 ${child.pid}`;
+    
+    child.kill('SIGTERM')
     child.kill('SIGKILL')
+    
 }
 
 module.exports = {

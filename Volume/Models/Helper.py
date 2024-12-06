@@ -8,6 +8,7 @@ import asyncio
 import time
 from PIL import Image
 from io import BytesIO
+import signal
 
 
 """
@@ -67,6 +68,21 @@ SERVER_LOCATION = args[1]
 SOCKET_LOCATION = args[2]
 TOKEN = args[3] #authentication token
 IDENTIFIER = args[4] #token to identify what chat was associated with this python proc
+
+async def Run(func):
+    loop = asyncio.get_running_loop()
+
+    def handler(sig,frame):
+        loop.stop()
+    
+    signal.signal(signal.SIGINT, handler)
+    signal.signal(signal.SIGTERM, handler)
+
+    try:
+        await asyncio.gather(func())
+    except:
+        print("Task was cancelled")
+
 def Loop(proc):
     with connect(SOCKET_LOCATION) as ws:
         data = GetData(ws)
@@ -76,9 +92,10 @@ def Loop(proc):
         chat = data["id"]
         files = data["files"]#project files
         params = ZipConfig(config)
-        #missing project files
         
-        proc(ws,messages,chat,params,files)
+        proc = lambda : proc(ws,messages,chat,params,files)
+        #run async to enable shutdown
+        asyncio.run(proc)
 
 def GetProjectFiles(project):
     auth = {

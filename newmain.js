@@ -947,6 +947,7 @@ wss.on('connection',(asock)=>{
             asock.send(JSON.stringify({msg : "start",token : token}));
         }else if(json.msg == "end"){
             const token = json.token;
+
             EndMessage(token);
         }else if(json.msg == "python"){
             const token = json.token;
@@ -1010,6 +1011,7 @@ wss.on('connection',(asock)=>{
             const token = json.token;
             const date = json.date;
             const pckg = PythonProccess[token]
+            if(!pckg) return;//can't get package on killed process
             pckg.client.send(JSON.stringify({
                 msg : "Get From",
                 date : date
@@ -1017,6 +1019,7 @@ wss.on('connection',(asock)=>{
         }else if(json.msg == "Update"){
             const token = json.token;
             const pckg = PythonProccess[token]
+            if(!pckg) return ; //cant update a killed process
             pckg.client.send(JSON.stringify({
                 msg : "Update",
                 data : json.data
