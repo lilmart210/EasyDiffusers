@@ -53,7 +53,7 @@ async function SpawnProcess(config,...args){
         },
         shell : shell,
         detached : false,
-        stdio : 'inherit',
+        stdio : ['ignore','inherit','ignore'],
 
         cwd : MODELDIRECTORY
     })

@@ -951,6 +951,7 @@ wss.on('connection',(asock)=>{
         }else if(json.msg == "python"){
             const token = json.token;
             const pckg = PythonProccess[token]
+            if(!pckg) return console.log("tried to get a process that was Killed");
             const id = pckg.chatid;
             const config = pckg.config;
             const project = pckg.project;
