@@ -6,7 +6,8 @@ from diffusers import DDPMScheduler
 import torch
 import random
 from diffusers import StableDiffusion3Pipeline
-token = "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"
+
+token="YOU TOKEN"
 
 def GenImg(text,negatives,steps,height,width,callback,guidance_scale):
     pipe = StableDiffusion3Pipeline.from_pretrained("stabilityai/stable-diffusion-3.5-medium", torch_dtype=torch.bfloat16)
