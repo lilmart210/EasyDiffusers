@@ -64,7 +64,7 @@ def Main(ws,messages : list,chat : int,params : dict,files : list):
         f1 = files[0]["project"]
         msgs.append({"role" : "system", "content" : f"The name of the working project is '{f1}'"})
     
-    docs = [{"role" : "system","content" : f"File Name: {afile["name"]}\n File Content : {afile["text"]}"} for afile in files]
+    docs = [{"role" : "system","content" : f"File Name: {afile['name']}\n File Content : {afile['text']}"} for afile in files]
     msgs.extend(docs)
     for x in range(len(messages)):
         #iterate over files
