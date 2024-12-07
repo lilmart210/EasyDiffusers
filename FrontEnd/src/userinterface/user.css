@@ -83,6 +83,10 @@
     margin-left: 5px;
 }
 
+.UserInterface .Option > :nth-child(2){
+    margin-top: 10px;
+}
+
 .UserInterface .Option {
     width : calc(min(15%,15rem));
     display : flex;

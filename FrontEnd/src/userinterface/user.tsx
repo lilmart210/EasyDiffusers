@@ -148,19 +148,19 @@ export function UserInterface(){
 
     useEffect(()=>{
         //try to load config defaults
-
-    },[SelectedConfig])
-    useEffect(()=>{
-
-    },[SelectedConfig])
-    function TryLoadConfig(){
         if(!SelectedConfig) return;
-        const loded = localStorage.getItem(SelectedConfig.name)
-        
-        return ()=>{
-            //localStorage.setItem(SelectedConfig)
-        }
-    }
+        const configs = Config.map((itm)=>{
+            if(itm.name == SelectedConfig?.name) return SelectedConfig;
+            return itm;
+        })
+
+        localStorage.setItem("configuration",JSON.stringify(configs)); // sets the changed configuation values
+        SetConfig(configs);
+        localStorage.setItem("config",SelectedConfig.name); // sets the selected config name
+        //save changes to selected config and then 
+
+    },[SelectedConfig])
+
     useEffect(()=>{
         if(SelectedChat == undefined){
             SetChatMessages([]);
@@ -240,26 +240,36 @@ export function UserInterface(){
 
         const config : Config[] = await res.json();
         
-        const conf = localStorage.getItem('config');
-
-        if(!conf){
-            const zipped = config.map((itm)=>zipoptions(itm));
-
-            localStorage.setItem('config',JSON.stringify(zipped));
-        }else{
-            config.forEach((itm)=>{
-                itm.options.forEach((j)=>{
-                    //oppossing = conf.
-                })
-                const f = itm.options.find((j)=>j.name == itm.name);
-                if(!f) return;
-                const aval = f.value != undefined ? f.value : f.default;
-                
-            })
-        }
         
-        SetSelectedConfig(prev=>!prev ? config[0]:prev)
-        SetConfig(config);
+        //SetSelectedConfig(prev=>!prev ? config[0]:prev)
+        const newconf = [...config];
+        let oldconfigstring = localStorage.getItem('configuration');
+        const oldconfig : Config[] = oldconfigstring ? JSON.parse(oldconfigstring) : [];
+        
+        for(let i = 0;i < newconf.length;i++){
+            const aname = newconf[i].name;
+            const obj = oldconfig.find((elem)=>elem.name == aname);
+            if(!obj) continue;
+            //iterate over the options, and add it if its there
+            const opts = newconf[i].options
+            for(let j = 0;j< opts.length;j++){
+                const o = opts[j];
+                const ex = obj.options.find((itm)=>itm.name == o.name);
+                if(!ex) continue;
+                o.value = ex.value;
+                o.default = ex.default
+            }
+        }
+        localStorage.setItem('configuration',JSON.stringify(newconf));
+        SetConfig(newconf);
+
+        const configname = localStorage.getItem('config');
+        const selectedconf = newconf.find((itm)=>itm.name == configname)
+        console.log(configname,selectedconf);
+        if(configname && selectedconf){
+            SetSelectedConfig(selectedconf)
+        }
+
 
     }
 
@@ -597,6 +607,7 @@ export function UserInterface(){
         const itm = Config.find((j)=>j.name == val);
         if(!itm) return;
         SetSelectedConfig(itm);
+        localStorage.setItem('config',itm.name)
     }
 
     function UpdateOption(aname : string,aval : any){
@@ -686,7 +697,7 @@ export function UserInterface(){
             <div className='Chat'>
                 <div className='Chat-Header'>
                     <button className='TerminalButton' onClick={()=>SetShowChat(prev=>!prev)}>{ShowChat ? 'Terminal' : 'Chat'}</button>
-                    <select onChange={ChangeSelectedConfig}>
+                    <select onChange={ChangeSelectedConfig} value={SelectedConfig?.name}>
                         {
                             Config.map((itm,i)=>(
                                 <option key={i} value={itm.name}>{itm.name}</option>
@@ -791,6 +802,7 @@ export function UserInterface(){
                                         </select>
                                     )}
                                     {itm.type == 'string' && <input type='text' name={itm.name} value={itm.value ? itm.value : itm.default} onChange={SetInputValue}/>}
+                                    <button onClick={()=>itm.default && UpdateOption(itm.name,itm.default)}>{`\u{21BA}`}</button>
                                 </div>
                             )
                         })
