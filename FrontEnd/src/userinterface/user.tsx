@@ -942,7 +942,8 @@ function MakeSocket(callback : (data : MessageEvent)=>any){
 
     function init(token : string){
         Token = token;
-        Socket = new WebSocket(import.meta.env.VITE_SOCKET || `ws://${window.location.host}`)
+        const pref = window.location.protocol == 'https:' ? 'wss' : 'ws'
+        Socket = new WebSocket(import.meta.env.VITE_SOCKET || `${pref}://${window.location.host}`)
         Socket.onopen = ()=>{
             Socket && Socket.send(Token);
             ready = true;
