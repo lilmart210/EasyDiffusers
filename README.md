@@ -23,6 +23,7 @@ Refer to the video in order to see an example
 3. `npm install` in base repository directory
 4. `cd FrontEnd` and run `npm install`. then run `npm run build` and Return to the root directory using `cd ..`
 5. run `docker build -t <mrmartinwatson/easydiff:v1> ./` substitute a-name for whatever you want. I use easydiff  
+> the command i use `docker run -dit --gpus all --name diffusers2 -e PLATFORM="LINUX" -p 4809:7377 --restart always --mount type=bind,source="$(pwd)",target=/app/Volume mrmartinwatson/easydiff:v1`  
 > docker push mrmartinwatson/easydiff:v1
 If no errors than you have successfully built the image  
 > This Communicates over https, so make sure you are prefixing `https://<ipaddress:port>/`  
