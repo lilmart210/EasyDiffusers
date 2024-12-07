@@ -268,6 +268,8 @@ export function UserInterface(){
         console.log(configname,selectedconf);
         if(configname && selectedconf){
             SetSelectedConfig(selectedconf)
+        }else{
+            config.length && SetSelectedConfig(config[0])
         }
 
 
@@ -311,9 +313,9 @@ export function UserInterface(){
             method : "GET"
         })
         if(raw.status != 200) return console.log(raw.status,raw.statusText);
-        const json = await raw.json();
-
-        SetChats(json);
+        const json : Chat[] = await raw.json();
+        let sorted = json.sort((a,b)=>Number(b.date) - Number(a.date));
+        SetChats(sorted);
     }
 
     async function SubmitNewChat(e : React.FormEvent<HTMLFormElement>){
@@ -465,6 +467,7 @@ export function UserInterface(){
             chatid : SelectedChat.id,
             project : SelectedProject ? SelectedProject : undefined
         }
+        console.log(SelectedConfig);
 
         SocketRef.current.send(JSON.stringify(sockmsg));
     }
