@@ -38,6 +38,7 @@ Example docker command `docker run -dit --gpus all --name diffuser2 -p 4505:7377
 > If you are using Nvidia gpus, you may have to install nvidia-runtime container and specify --runtime nvidia  
 > By default, there is a model shown and a default configuration. Inside the `anime.py` file is an example of how to use `helper.py` to communicate with the backend  
 > Before you  
+> Somethings such as camera, and voice audio are only available over ssl, this is not an app limitation but a chromium thing  
 
 ### config.json
 This file must contain an array `[]`
