@@ -12,9 +12,11 @@
     align-items: center;
     width : 100vw;
     height : 100vh;
+    background-color: #282828;
 }
 
 .register form {
+    padding : 10px;
     height : 15rem;
     gap : 2rem;
     display: flex;

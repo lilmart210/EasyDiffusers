@@ -64,6 +64,7 @@ const upload = multer.diskStorage({
         //two different file uploads
         //insert file into files table if a chat message
         if(req.UPLOAD.chat){
+            //chat is actually message id...bad name
             //create name and add to files
             await DB('files')
             .insert({
@@ -532,7 +533,7 @@ app.post('/project/get/files',AuthReq,async(req,res)=>{
         const adir = path.join(DATADIRECTORY,entry.directory);
         const entities = fs.readdirSync(adir,{encoding : 'utf-8',withFileTypes : true});
         const files = entities.filter((itm)=>itm.isFile())
-        const data = files.map((itm)=>fs.readFile(path.join(adir,itm.name),{encoding : 'utf-8'}));
+        const data = files.map((itm)=>fs.readFileSync(path.join(adir,itm.name),{encoding : 'utf-8'}));
         await Promise.all(data);
         const arr = [];
         for(let i = 0;i<data.length;i++){
@@ -543,11 +544,28 @@ app.post('/project/get/files',AuthReq,async(req,res)=>{
         }
 
         res.send(arr);
-    }catch{
+    }catch(e){
         console.log("could not get files",e);
         res.sendStatus(500);
     }
 })
+app.post('/project/file',AuthReq,async(req,res)=>{
+    try{
+        const pid = req.body.id;
+        const [entry] = await DB('projects')
+        .select('*')
+        .where({id : pid,owner : req.AUTH.email})
+
+        const name = req.body.name;
+        if(!name) return res.sendStatus(404);
+
+        const aname = path.join(DATADIRECTORY,entry.directory,name);
+
+        res.sendFile(aname);
+    }catch(e){
+        console.log("could not get file",e);
+    }
+});
 //upload a file to a project
 app.post('/project/upload/:project',AuthReq,FileParams,storage.any(),async(req,res)=>{
     res.sendStatus(200);
@@ -678,8 +696,34 @@ app.post('/message/get',AuthReq,async (req,res)=>{
 })
 
 //update a message(not a file?) todo
-app.post('/message/update/:id',AuthReq,(req,res)=>{
+app.post('/message/update',AuthReq,async(req,res)=>{
+    try{
+        const mid = req.body.id;
+        let role = req.body.role;
+        let text = req.body.text;
 
+        if(mid == undefined) return res.sendStatus(404);
+        const pckg = {};
+
+        if(role != undefined && role == 'ai' || role == 'user' || role == 'system'){
+            pckg['role'] = role;
+        }
+        if(text != undefined && typeof text == 'string'){
+            pckg["text"] = text;
+        }
+
+        await DB('messages')
+            .select("*")
+            .where({id : mid})
+            .update(pckg)
+
+        res.sendStatus(200);
+
+
+
+    }catch(e){
+        console.log("failed to update message",e);
+    }
 })
 
 //delete a message and its files
@@ -694,6 +738,9 @@ app.post('/message/delete',AuthReq,async (req,res)=>{
 
         if(!entry.length) return res.sendStatus(403);
         
+        //this could be probablimatic
+        //this deletes every file out the chat...
+        //chat is actuallt msg id, bad name
         await DB('files')
         .where({chat : msgid})
         .del();
@@ -870,6 +917,7 @@ app.get('/file/:chatid/:fileid',AuthReq,async (req,res)=>{
         const fp = path.join(UPLOADDIRECTORY,chatowner.directory,afile.file);
         res.sendFile(fp);
     }catch(e){
+        console.log("tried to get a file that does not exists",e);
         res.sendStatus(500);
     }
 })
@@ -880,6 +928,27 @@ const PythonProccess = {
 
 
 wss.on('connection',(asock)=>{
+
+    const HeartBeat = ()=>{
+        asock.MyHeartBeat = true;
+
+        let time = setInterval(()=>{
+            if(!asock.MyHeartBeat){
+                clearInterval(time);
+                asock.close();
+            }else{
+                asock.MyHeartBeat = false;
+                asock.send(JSON.stringify({msg : "heartbeat"}));
+            }
+        },2000)
+        asock.HeartTime = time;
+    }
+
+    asock.on('close',()=>{
+        if(asock.HeartTime != undefined) clearInterval(asock.HeartTime);
+        
+        //do we need to resolve when problems arrise on python backend here
+    })
     asock.on('message',async (data,isbin)=>{
         //first message must be authentication token.
         //it is binary
@@ -893,6 +962,8 @@ wss.on('connection',(asock)=>{
                 }
                 asock.Authenticated = true;
                 asock.TOKEN = msg;
+                
+                HeartBeat();
 
                 return;
             }catch(e){
@@ -911,6 +982,9 @@ wss.on('connection',(asock)=>{
         }
 
         if(!json) return;
+        if(json.msg == 'remove heartbeat'){
+            clearInterval(asock.HeartTime);
+        }
         
         //json should adhere to this principle
         if(json.msg == "start"){            
@@ -938,6 +1012,7 @@ wss.on('connection',(asock)=>{
 
             proc.on('error',(e)=>{
                 console.log("Socket Error",e);
+                EndMessage(token);//alert the user this has ended
             })
 
             proc.on('close',()=>{
@@ -957,48 +1032,15 @@ wss.on('connection',(asock)=>{
             const config = pckg.config;
             const project = pckg.project;
 
-            let projfiles = [];
-            if(project){
-                const adir = path.join(DATADIRECTORY,project.directory);
-                const entities = fs.readdirSync(adir,{encoding : 'utf-8',withFileTypes : true});
-                const files = entities.filter((itm)=>itm.isFile()).map((itm)=>({
-                    name : itm.name
-                }));
-                files.forEach((itm)=>{
-                    const ap = path.join(adir,itm.name);
-                    const textdata = fs.readFileSync(ap,{encoding : 'utf-8'});
-                    projfiles.push({name : itm.name,text : textdata,project : project.name})
-                })
-            }
-            
             const retpack = {
                 config : config,
-                msgs : [],
                 id : id,
-                files : projfiles
+                project : project
             };
-            
+
             //this returns message with files
             try{
-                const msgid = id
 
-                //get all messages for that chat
-                let msgs = await DB('messages')
-                .select("*")
-                .where({chat : msgid})
-
-                msgs = msgs.map((itm)=>({...itm,date : Number(itm.date)}))
-
-                //get all the files for that message | files (chat) is mislabeled. Should be message
-                const prms = msgs.map((itm)=>DB('files').select('*').where({chat : itm.id}))
-                const files = await Promise.all(prms);
-
-
-                //zip the files if any along with the message
-                const zipped = msgs.map((itm,i)=>({files : files[i],msg : itm}));
-                const sorted = zipped.toSorted((a,b)=>a.msg.date - b.msg.date);
-                //sort them and then send
-                retpack.msgs = sorted;
                 //send chat history
                 asock.send(JSON.stringify(retpack))
 
@@ -1024,6 +1066,8 @@ wss.on('connection',(asock)=>{
                 msg : "Update",
                 data : json.data
             }))
+        }else if(json.msg == 'heartbeat'){
+            asock.MyHeartBeat = true;
         }
 
     })

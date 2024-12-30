@@ -86,14 +86,32 @@ async def Run(func):
 def Loop(proc):
     with connect(SOCKET_LOCATION) as ws:
         data = GetData(ws)
+        #config id project
+        #configuration is unchanged name,source,options,env
+        #id is the chatid number\chatid
+        #project is the project 'selected project' id,name,owner,directory
+
         #Chat messages and configuration
         config = data["config"]
-        messages = data["msgs"]
         chat = data["id"]
-        files = data["files"]#project files
+        project = data.get('project',{})
+
         params = ZipConfig(config)
+        messages = GetChatMessages(chat)
+        #messages = data["msgs"]
         
-        proc2 = lambda : proc(ws,messages,chat,params,files)
+        #files = data["files"]#project files
+        files = []
+        if(project):
+            files = GetProjectFiles(project)
+        #{name:string,source:string,options:env,files:[{name :string,text : string}]}
+        projectfiles = {
+            **project,
+            "files" : files,
+        }
+        
+
+        proc2 = lambda : proc(ws,messages,chat,params,projectfiles)
         #run async to enable shutdown
         #asyncio.run(Run(proc2))
         proc2()
@@ -110,6 +128,21 @@ def GetProjectFiles(project):
 
     response = requests.post(addr,headers=auth,json = body)
     return response.json()
+
+def GetChatMessages(chat: int):
+    auth = {
+        "Authorization" : f"Bearer {TOKEN}",
+    }
+    body = {
+        "id" : chat
+    }
+    
+    addr = f"{SERVER_LOCATION}/message/get"
+
+    response = requests.post(addr,headers=auth,json = body)
+
+    return response.json()
+
 
 def GetMessageFiles(chat : int, msg : dict):
     f : list = msg["files"]
@@ -131,6 +164,8 @@ def GetData(ws):
     """Gets the data from the server to begin initialization, initializes socket"""
     #authenticate
     ws.send(TOKEN)
+    #remove the heartbeat listenener
+    ws.send(json.dumps({"msg" : "remove heartbeat"}))
     #get chat history and config
     ws.send(json.dumps({"msg" : "python","token" : IDENTIFIER}))
     #do something with this
@@ -157,7 +192,7 @@ def Update(ws,msg : str = ""):
         "token" : IDENTIFIER
     }))
 
-def SendChat(chat : int,date : int, msg : str,files = []):
+def SendChat(chat : int,date : int, msg : str,role : str = 'ai',files = []):
     """Sends a permanent chat message, does not terminate the session"""
 
     auth = {
@@ -166,7 +201,7 @@ def SendChat(chat : int,date : int, msg : str,files = []):
     body = {
         "chat" :  chat,
         "date" : date,
-        "role" : "ai",
+        "role" : role,
         "text" : msg
     }
     

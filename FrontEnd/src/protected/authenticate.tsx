@@ -3,8 +3,19 @@ import './authenticate.css'
 import { useNavigate, useNavigationType, useSearchParams } from 'react-router-dom';
 
 import { Outlet } from 'react-router-dom';
+import { useSocketComponent } from '../New User/Socket';
 
-export const prefix = `${import.meta.env.VITE_BACKEND || ''}`
+const backport = import.meta.env.VITE_PORT;
+const backend = `${window.location.hostname}`
+const ws_pref = window.location.protocol == 'https:' ? 'wss' : 'ws';
+
+export let prefix = `${window.location.protocol}//${backend}:${backport}`
+export let socket_location = `${ws_pref}://${backend}:${backport}`
+
+socket_location = backport ? socket_location :  `${ws_pref}://${window.location.host}`
+prefix = backport ? prefix : '';
+console.log(prefix,socket_location);
+
 
 export function Login(){
     const nav = useNavigate();
@@ -152,13 +163,22 @@ export function Protected(){
 }
 
 
+export const SocketContext = createContext<any>(null);
+ 
+export function SocketProvider(props : React.PropsWithChildren){
+    const socket = useSocketComponent();
+
+    return <SocketContext.Provider value={{Socket : socket}}>{props.children}</SocketContext.Provider>
+}
+
 //To dev, set auth to true and put a short-circuit return statement in useEffect
 export function ProtectedProvider(props : React.PropsWithChildren){
-    const [IsAuth,SetAuth] = useState(false);
+    const [IsAuth,SetAuth] = useState(true);
     const [Token,SetToken] = useState('');
     const [RefreshToken,SetRefreshToken] = useState('');
 
     const nav = useNavigate();
+
 
     useEffect(()=>{
         //load token

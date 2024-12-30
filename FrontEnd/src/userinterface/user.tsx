@@ -304,10 +304,9 @@ export function UserInterface(){
                 ...opts?.headers,
                 'Authorization' : `Bearer ${context.Token}`
             },
-            
-
         })
     }
+    
     async function GetChats(){
         const raw = await MyFetch('/chats',{
             method : "GET"
