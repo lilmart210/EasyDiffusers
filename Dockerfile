@@ -16,7 +16,7 @@ RUN mkdir build
 # copy in the data
 # COPY example.com.* ./
 # COPY Volume/Models/Helper.py Volume/Models
-
+COPY requirements.txt .
 # copy packages
 COPY package* ./
 RUN npm install

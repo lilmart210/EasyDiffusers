@@ -1,4 +1,4 @@
-# Easy Diffusers
+# Easy Diffusers | Systic A.I, made by Currupt Nation
 ### Make a diffusion model
 Refer to the video in order to see an example  
 [![EasyDiffusers](https://img.youtube.com/vi/Z5y2Y5v_yQ4/default.jpg)](https://youtu.be/Z5y2Y5v_yQ4)
@@ -8,13 +8,10 @@ Refer to the video in order to see an example
 ### Provides a convenient way to interact with ml models  
 (![image copy.png](https://github.com/lilmart210/EasyDiffusers/blob/main/image_copy.png))
 ## Getting Started | How To  
-> example command `docker run -dit --gpus all --name diffusers2 -e PLATFORM="LINUX" -p 4809:7377 --mount type=bind,source="$(pwd)",target=/app/Volume mrmartinwatson/easydiff:v1`  
-> when resusing old docker files, make sure you chmod the volume folder and all of its children from inside the image `chmod -R 777 Volume`  
-> these packages need to be installled  
-> pip install websockets  
-> pip install diffusers["torch"] transformers  
-> pip install torch torchvision torchaudio  
-> pip install accelerate  
+> example command `docker run -dit --gpus all --name diffusers2 -e PLATFORM="LINUX" -p 4809:7377 --mount type=bind,source="$(pwd)",target=/app/Volume mrmartinwatson/easydiff:v2`  
+> when resusing old docker files, make sure you chmod the volume folder and all of its children from *inside* the image `chmod -R 777 Volume`  
+> requirements.txt contains the packages I use to deploy models, they are needed for the demo. Install what you want.    
+
 
 ### Build Docker
 
@@ -37,7 +34,7 @@ Example docker command `docker run -dit --gpus all --name diffuser2 -p 4505:7377
 
 > If you are using Nvidia gpus, you may have to install nvidia-runtime container and specify --runtime nvidia  
 > By default, there is a model shown and a default configuration. Inside the `anime.py` file is an example of how to use `helper.py` to communicate with the backend  
-> Before you  
+> Before you can run the model, you need to 
 > Somethings such as camera, and voice audio are only available over ssl, this is not an app limitation but a chromium thing  
 
 ### config.json
@@ -99,7 +96,7 @@ In the terminal, type `docker exec -it <image_name> bash` This will bring you to
 ### Installing Packages (IMPORTANT)
 The image comes with pip installed. Inside the package we must navigate to `/app/Volume/Environments`  
 This directory will have all of your python virtual environments. use `source <default>/bin/activate` or `. <default>/bin/activate`in order to activate your environment. replace default with the name of your created environment.  
-once your environment is activated you can simply `pip install <package-name>` and it will be installed into the environment. 
+once your environment is activated you can simply `pip install <package-name>` and it will be installed into the environment. Install packages from requirements.txt 
 
 ### Creating a Python Environment (IMPORTANT)
 inside your `/app/Volume/Environments` folder you should see a `default` folder.  
