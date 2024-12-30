@@ -289,10 +289,12 @@ export function useSocketComponent(){
     }
     function ScrollToBottom(){
         if(!ScrollContainerRef.current || !ScrollAtBottom) return;
+        const scrollallowed = localStorage.getItem('autoscroll');
+        if(!scrollallowed) return;
 
         //only scroll to bottom if the scroll was already at the bottom
         //ScrollContainerRef.current.scrollTop = ScrollContainerRef.current.scrollHeight;
-        //ScrollContainerRef.current.lastElementChild?.scrollIntoView({behavior : 'smooth',block : 'end'})
+        ScrollContainerRef.current.lastElementChild?.scrollIntoView({behavior : 'smooth',block : 'end'})
     }
     /**Function for the website */
     //get the chat messages after time period date.
@@ -485,6 +487,7 @@ export function useSocketComponent(){
     }
 
     function ShowChat(chat : Chat){
+        SetChatMessages([]);
         SetSelectedChat(prev=>{
             if(!prev) return chat;
 
@@ -494,6 +497,8 @@ export function useSocketComponent(){
         })
     }
     function ShowProject(project : Project){
+        SetSelectedProjectFile(undefined);
+        SetProjectFiles([]);
         SetSelectedProject(prev=>!prev || prev.id != project.id ? project : undefined);
     }
 

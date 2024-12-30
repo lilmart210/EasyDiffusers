@@ -132,6 +132,7 @@ export function Collage(){
     const [LargeMedia,SetLargeMedia] = useState<File>();
     const [AllowVibrate,SetAllowVibrate] = useState(!!localStorage.getItem('vibrate'));
     const [AllowSamples,SetAllowSamples] = useState(!!localStorage.getItem('sampled'));
+    const [AllowAutoScroll,SetAllowAutoScroll] = useState(!!localStorage.getItem('autoscroll'));
     const [ProjectSearch,SetProjectSearch] = useState('');
     const [ChatSearch,SetChatSearch] = useState('');
     const [HoverDetail,SetHoverDetail] = useState('');
@@ -162,6 +163,12 @@ export function Collage(){
 
         localStorage.setItem('vibrate',AllowVibrate ? 'allow' : '');
     },[AllowVibrate])
+    useEffect(()=>{
+        if(AllowAutoScroll == undefined){
+            SetAllowAutoScroll(true);
+        }
+        localStorage.setItem('autoscroll',AllowAutoScroll ? 'allow' : '');
+    },[AllowAutoScroll])
 
     useEffect(()=>{
         if(AllowSamples == undefined){
@@ -438,7 +445,7 @@ export function Collage(){
                                 Socket.MemoUploadFiles
                             }    
                         </div>
-                        <div className={InputField.join(' ')} ref={Socket.TextInputRef} onKeyDown={InputDown} contentEditable={(Socket.SelectedChat != undefined) && !Socket.WaitingResponse} onDragOver={(e)=>e.preventDefault()}onPaste={Socket.OnPaste} onDrop={Socket.DropedImage}>
+                        <div className={InputField.join(' ')} ref={Socket.TextInputRef} onKeyDown={InputDown} onMouseEnter={()=>{!Socket.SelectedProject&&SetHoverDetail('Hover Left side to select chat')}}onMouseLeave={()=>{SetHoverDetail('')}} contentEditable={(Socket.SelectedChat != undefined) && !Socket.WaitingResponse} onDragOver={(e)=>e.preventDefault()}onPaste={Socket.OnPaste} onDrop={Socket.DropedImage}>
                         </div>
                         <div className='Helper'>
                             <select value={Socket.SelectedConfig?.name} onChange={Socket.ChangeSelectedConfig}>
@@ -523,13 +530,18 @@ export function Collage(){
                                     </select>
                                 </div>
                                 <div>
-                                    <label>Disable Samples</label>
+                                    <label>Enable Samples</label>
                                     <input type='checkbox' name='samples' checked={AllowSamples} onChange={(e)=>SetAllowSamples(prev=>!prev)} />
                                 </div>
                                 <div>
-                                    <label>Disable Vibrate</label>
+                                    <label>Enable Vibrate</label>
                                     <input type='checkbox' name='samples' checked={AllowVibrate} onChange={(e)=>SetAllowVibrate(prev=>!prev)} />
                                 </div>
+                                <div>
+                                    <label>Enable AutoScroll</label>
+                                    <input type='checkbox' name='samples' checked={AllowAutoScroll} onChange={(e)=>SetAllowAutoScroll(prev=>!prev)} />
+                                </div>
+                                
                                 <hr/>
                                 {
                                     Socket.SelectedConfig && Socket.SelectedConfig.options.map((itm,i)=>{
