@@ -292,7 +292,7 @@ export function Collage(){
             }
     
             return(
-                <li key={i} className={cn.join(' ')} onDoubleClick={(e)=>{e.preventDefault();e.stopPropagation();Socket.SetSelectedProjectFile(itm);click()}} onClick={()=>Socket.ShowProject(itm)}>
+                <li key={i} className={cn.join(' ')} onDoubleClick={(e)=>{e.preventDefault();e.stopPropagation();Socket.SetSelectedProjectFile(itm);ShowInPreview('project');}} onClick={(e)=>e.detail == 1 && Socket.ShowProject(itm)}>
                     <button onClick={click}><ExternalLink size={16}/></button>
                     {itm.name}
                     <button onClick={remitem}><Trash size={16}/></button>
