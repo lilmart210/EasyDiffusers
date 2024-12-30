@@ -6,7 +6,7 @@ Refer to the video in order to see an example
 ## Purpose
 ### Meant to be an environment where you can use Diffusers or other ML pipelines outside of Jupyter Notebook  
 ### Provides a convenient way to interact with ml models
-
+![Image of Application, if you can't see this check out the youtube video](image copy.png)
 ## Getting Started | How To  
 > example command `docker run -dit --gpus all --name diffusers2 -e PLATFORM="LINUX" -p 4809:7377 --mount type=bind,source="$(pwd)",target=/app/Volume mrmartinwatson/easydiff:v1`  
 > when resusing old docker files, make sure you chmod the volume folder and all of its children from inside the image `chmod -R 777 Volume`  
@@ -22,7 +22,7 @@ Refer to the video in order to see an example
 2. Skip steps 3 if you don't intend on modifying source code
 3. `npm install` in base repository directory
 4. `cd FrontEnd` and run `npm install`. then run `npm run build` and Return to the root directory using `cd ..`
-5. run `docker build -t <mrmartinwatson/easydiff:v1> ./` substitute a-name for whatever you want. I use easydiff  
+5. run `docker build -t <mrmartinwatson/easydiff:v1> ./` substitute a-name for whatever you want. I use easydiff. Push to cloude `docker image push <mrmartinwatson/easydiff:v1>`  
 > the command i use `docker run -dit --gpus all --name diffusers2 -e PLATFORM="LINUX" -p 4809:7377 --restart always --mount type=bind,source="$(pwd)",target=/app/Volume mrmartinwatson/easydiff:v1`  
 > docker push mrmartinwatson/easydiff:v1
 If no errors than you have successfully built the image  

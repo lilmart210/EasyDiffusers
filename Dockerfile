@@ -1,4 +1,4 @@
-FROM node:23-bookworm
+FROM node:23-bookworm-slim
 
 RUN apt-get update || : && apt-get install python-is-python3 -y
 RUN apt-get install python3-pip -y
