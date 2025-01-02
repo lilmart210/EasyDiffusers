@@ -45,7 +45,7 @@ def Main(ws,messages : list,chat : int,params : dict,projectfiles : list):
     images = GenImg(text,negatives,steps,height,width,mycall)
 
 
-    H.SendChat(chat,date,'',images)
+    H.SendChat(chat,date,'',files=images)
 
     H.GetFrom(ws,date)    
     H.Update(ws,"done generating message, closing")
