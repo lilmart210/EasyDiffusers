@@ -1,0 +1,112 @@
+[
+    {
+        "name" : "Anime",
+        "source" : "anime.py",
+        "options" : [
+            {
+                "name" : "inference",
+                "default" : 20,
+                "type" : "select",
+                "selection" : [10,20,30,40]
+            },
+            {
+                "name" : "count",
+                "default" : 1,
+                "max" : 4,
+                "min" : 1,
+                "type" : "number"
+            },
+            {
+                "name" : "cpu",
+                "default" : true,
+                "type" : "boolean"
+            },
+            {
+                "name" : "negatives",
+                "default" : "extra arms",
+                "type" : "string"
+            }
+        ],
+        "env" : "default"
+    },
+    {
+        "name" : "Qween 7B Instruct",
+        "env" : "default",
+        "options" : [
+            {
+                "name" : "tokens",
+                "type" : "number",
+                "default" : 512,
+                "min" : 1,
+                "max" : 50000
+            }
+        ],
+        "source" : "qween7b.py"
+    },
+    {
+        "name" : "Qween 32B Instruct",
+        "env" : "default",
+        "options" : [
+            {
+                "name" : "tokens",
+                "type" : "number",
+                "default" : 512,
+                "min" : 1,
+                "max" : 50000
+            }
+        ],
+        "source" : "qween32b.py"
+    },
+    {
+        "name" : "Qween 0.5B Instruct",
+        "env" : "default",
+        "options" : [
+            {
+                "name" : "tokens",
+                "type" : "number",
+                "default" : 512,
+                "min" : 1,
+                "max" : 50000
+            }
+        ],
+        "source" : "qween05b.py"
+    },
+    {
+        "name" : "Stable Diffusion 3.5 Medium",
+        "env" : "default",
+        "options" : [
+            {
+                "name" : "steps",
+                "type" : "number",
+                "default" : 20,
+                "min" : 1,
+                "max" : 200
+            },
+            {
+                "name" : "width",
+                "type" : "select",
+                "default" : 512,
+                "selection" : [256,512,1024]
+            },
+            {
+                "name" : "height",
+                "type" : "select",
+                "default" : 512,
+                "selection" : [256,512,1024]
+            },
+            {
+                "name" : "negatives",
+                "type" : "string",
+                "default" : ""
+            },
+            {
+                "name" : "guidance scale",
+                "type" : "number",
+                "default" : 4.5,
+                "min" : 1,
+                "max" : 10
+            }
+        ],
+        "source" : "stablediff3.5med.py"
+    }
+]
