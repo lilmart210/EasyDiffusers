@@ -445,7 +445,7 @@ export function Collage(){
                                 Socket.MemoUploadFiles
                             }    
                         </div>
-                        <div className={InputField.join(' ')} ref={Socket.TextInputRef} onKeyDown={InputDown} onMouseEnter={()=>{!Socket.SelectedProject&&SetHoverDetail('Hover Left side to select chat')}}onMouseLeave={()=>{SetHoverDetail('')}} contentEditable={(Socket.SelectedChat != undefined) && !Socket.WaitingResponse} onDragOver={(e)=>e.preventDefault()}onPaste={Socket.OnPaste} onDrop={Socket.DropedImage}>
+                        <div className={InputField.join(' ')} ref={Socket.TextInputRef} onKeyDown={InputDown} onMouseEnter={()=>{!Socket.SelectedChat&&SetHoverDetail('Hover Left side to select chat')}}onMouseLeave={()=>{SetHoverDetail('')}} contentEditable={(Socket.SelectedChat != undefined) && !Socket.WaitingResponse} onDragOver={(e)=>e.preventDefault()}onPaste={Socket.OnPaste} onDrop={Socket.DropedImage}>
                         </div>
                         <div className='Helper'>
                             <select value={Socket.SelectedConfig?.name} onChange={Socket.ChangeSelectedConfig}>

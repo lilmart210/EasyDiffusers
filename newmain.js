@@ -977,6 +977,7 @@ wss.on('connection',(asock)=>{
         try{
             json = JSON.parse(msg);
         }catch(e){
+            //we should handle bad messages...  
             //recieved a bad message
             console.log("could parse json",e);
         }

@@ -52,7 +52,7 @@ def Main(ws,messages : list,chat : int,params : dict,files : list):
         rt = files[0]["name"] + " "+sp[random.randint(0,len(sp) - 1)]
 
 
-    H.SendChat(chat,date,rt,images)
+    H.SendChat(chat,date,rt,files=images)
 
     H.GetFrom(ws,date)    
     H.Update(ws,"done generating message, closing")

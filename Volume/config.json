@@ -44,6 +44,20 @@
         "source" : "qween7b.py"
     },
     {
+        "name" : "Qween 32B Instruct",
+        "env" : "default",
+        "options" : [
+            {
+                "name" : "tokens",
+                "type" : "number",
+                "default" : 512,
+                "min" : 1,
+                "max" : 50000
+            }
+        ],
+        "source" : "qween32b.py"
+    },
+    {
         "name" : "Qween 0.5B Instruct",
         "env" : "default",
         "options" : [
