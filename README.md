@@ -10,7 +10,8 @@ Refer to the video in order to see an example
 ## Getting Started | How To  
 > example command `docker run -dit --gpus all --name diffusers2 -e PLATFORM="LINUX" -p 4809:7377 --mount type=bind,source="$(pwd)",target=/app/Volume mrmartinwatson/easydiff:v2`  
 > when resusing old docker files, make sure you chmod the volume folder and all of its children from *inside* the image `chmod -R 777 Volume`  
-> requirements.txt contains the packages I use to deploy models, they are needed for the demo. Install what you want.    
+> requirements.txt contains the packages I use to deploy models, they are needed for the demo. Install what you want.
+> you will need to install pytorch, the version is based on what version you have in 'nvidia-smi'
 
 
 ### Build Docker
