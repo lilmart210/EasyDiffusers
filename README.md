@@ -1,7 +1,7 @@
 # Easy Diffusers | Systic A.I, made by Currupt Nation
 ### Make a diffusion model
 Refer to the video in order to see an example  
-[![EasyDiffusers](https://img.youtube.com/vi/Z5y2Y5v_yQ4/default.jpg)](https://youtu.be/Z5y2Y5v_yQ4)
+[![EasyDiffusers](https://img.youtube.com/vi/Z5y2Y5v_yQ4/default.jpg)](https://youtu.be/DWxCotFXH1I?si=qFt0vNYWdy8LWDq7)
 
 ## Purpose
 ### Meant to be an environment where you can use Diffusers or other ML pipelines outside of Jupyter Notebook  
