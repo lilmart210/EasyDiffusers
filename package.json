@@ -6,7 +6,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node main.js",
-    "dev": "node newmain.js"
+    "dev": "node newmain.js",
+    "dbuild" : "docker build -t mrmartinwatson/easydiff:v1 ./",
+    "dpush" : "docker image push mrmartinwatson/easydiff:v1",
+    "mod" : "node modreq.js"
   },
   "keywords": [],
   "author": "",

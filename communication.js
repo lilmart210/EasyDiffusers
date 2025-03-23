@@ -10,7 +10,10 @@ const ENVIRONMENTSDIRECTORY = path.join(VOLUMEDIRECTORY,'Environments');//python
 const MODELDIRECTORY = path.join(VOLUMEDIRECTORY,'Models');
 const CACHEDIRECTORY = path.join(VOLUMEDIRECTORY,"CACHE");
 
-
+//unless specified, platform is windows
+function isWindows(){
+    return PLATFORM != 'LINUX'; 
+}
 /**
  * 
  * Instantiate a python proccess that will handle communication from the front end
@@ -83,5 +86,6 @@ function Kill(child){
 
 module.exports = {
     SpawnProcess,
-    Kill
+    Kill,
+    isWindows
 }

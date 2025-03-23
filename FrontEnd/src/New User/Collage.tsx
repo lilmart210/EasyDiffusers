@@ -212,6 +212,8 @@ export function Collage(){
 
         //check keys
         if(e.key == 'v' && e.ctrlKey){
+            e.preventDefault();
+            e.stopPropagation();
             //paste
             const text = await GetClipBoardText();
 
@@ -219,8 +221,11 @@ export function Collage(){
                 const afile = Socket.createFileFromText(text);
                 
                 Socket.SetUploadedFiles(prev=>[...prev,afile]);
+
+            }else{
+                Socket.TextInputRef.current.textContent += text;
+                
             }
-            Socket.TextInputRef.current.textContent += text;
         }
 
 

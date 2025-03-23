@@ -9,6 +9,11 @@ import time
 from PIL import Image
 from io import BytesIO
 import signal
+import cv2
+import numpy as np
+import io;
+import imageio
+
 
 
 """
@@ -60,7 +65,7 @@ Project files type
     ...
 ]
 """
-
+#where do i set the cache for huggingface?
 
 args = sys.argv
 
@@ -144,7 +149,7 @@ def GetChatMessages(chat: int):
     return response.json()
 
 
-def GetMessageFiles(chat : int, msg : dict):
+def GetMessageFiles(chat : int, msg : dict,text = False):
     f : list = msg["files"]
     arr = []
 
@@ -155,9 +160,13 @@ def GetMessageFiles(chat : int, msg : dict):
         addr = f"{SERVER_LOCATION}/file/{chat}/{f[i]['id']}"
 
         response = requests.get(addr,headers=auth,stream=True)
-        img = Image.open(BytesIO(response.content))
-        arr.append(img)
-    
+        if(not text):
+            img = Image.open(BytesIO(response.content))
+            arr.append(img)
+        else:
+            decoded_content = response.text
+            arr.append(decoded_content)
+
     return arr
 
 def GetData(ws):
@@ -192,7 +201,7 @@ def Update(ws,msg : str = ""):
         "token" : IDENTIFIER
     }))
 
-def SendChat(chat : int,date : int, msg : str,role : str = 'ai',files = []):
+def SendChat(chat : int,date : int, msg : str,role : str = 'ai',files = [],videos = False,fps =24):
     """Sends a permanent chat message, does not terminate the session"""
 
     auth = {
@@ -212,8 +221,11 @@ def SendChat(chat : int,date : int, msg : str,role : str = 'ai',files = []):
     if(response.status_code != 200) :
         return print("could not send chat")
     js = response.json()
-    if(len(files)):
+    if(not(videos) and len(files)):
         SendImage(js["id"],files)
+    
+    if(videos and len(files)):
+        SendVideo(js["id"],files,fps=fps)
 
 def GetFrom(ws,date : int):
     ws.send(json.dumps({"msg" : "Get From","token" : IDENTIFIER,"date" : date}))
@@ -233,6 +245,39 @@ def SendImage(chat : int,files : list,type="PNG",mime="image/png",name="file.png
 
         myfiles[f'file-{str(i)}'] = (name,memdata,mime)
     r = requests.post(url=addr,headers=auth,files=myfiles,verify=False)
+
+def SendVideo(chat: int, files: list, type="MP4", mime="video/mp4", name="file.mp4", fps=24):
+    addr = f"{SERVER_LOCATION}/message/{chat}"
+
+    auth = {
+        "Authorization": f"Bearer {TOKEN}",
+    }
+
+    myfiles = {}
+    for i, avideo in enumerate(files):
+        # Create a video buffer in memory
+        out_buffer = makevideo(avideo,fps)
+
+        # Prepare the in-memory video for upload
+        myfiles[f'file-{str(i)}'] = (name, out_buffer, mime)
+
+    r = requests.post(url=addr, headers=auth, files=myfiles, verify=False)
+
+
+    return r
+
+def makevideo(video_frames,fps):
+    if isinstance(video_frames[0], np.ndarray):
+        video_frames = [(frame * 255).astype(np.uint8) for frame in video_frames]
+    elif isinstance(video_frames[0],Image.Image):
+        video_frames = [np.array(frame) for frame in video_frames]
+    
+    video_bytes = io.BytesIO()
+    imageio.mimwrite(video_bytes, video_frames,format='mp4', fps=fps, codec='h264')
+    video_bytes.seek(0)
+
+    return video_bytes
+
 
 def Time():
     ms = int(round(time.time() * 1000))

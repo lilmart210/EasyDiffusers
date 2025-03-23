@@ -390,7 +390,6 @@ export function useSocketComponent(){
     function Disconnect(){
         if(ErrorTimeRef.current != undefined) clearTimeout(ErrorTimeRef.current);
         ErrorTimeRef.current = undefined;
-
     }
     //a blocking message ?
     async function Send(){

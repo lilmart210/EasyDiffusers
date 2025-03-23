@@ -1,7 +1,7 @@
 const dotenv = require('dotenv')
 dotenv.config()
 
-const {spawn, ChildProcess, exec} = require('child_process');
+const {spawn, ChildProcess, exec,execSync} = require('child_process');
 const path = require('path');
 const express = require('express');
 const os = require('os');
@@ -278,7 +278,6 @@ async function DatabaseCheck(){
         //failed to create table or table already exists
         console.log("failed to create tables",e);
     })
-
 }
 
 const configschema = [{
@@ -319,6 +318,8 @@ async function SetupWorkingEnvironment(){
     //put config.json into volume folder
     //make a python venv X, don't do this.
     //create a data folder, for huggingface home.
+    const defaultev = !fs.existsSync(path.join(ENVIRONMENTSDIRECTORY,"default"));
+    
 
     !fs.existsSync(VOLUMEDIRECTORY) && fs.mkdirSync(VOLUMEDIRECTORY,{recursive : true})
     !fs.existsSync(DATADIRECTORY) && fs.mkdirSync(DATADIRECTORY,{recursive : true})
@@ -340,6 +341,42 @@ async function SetupWorkingEnvironment(){
         const data = fs.readFileSync(path.join(__dirname,'anime.py'),{encoding : 'utf-8'});
         fs.writeFileSync(path.join(MODELDIRECTORY,'anime.py'),data,{encoding : 'utf-8'});
     }
+
+    if(defaultev){
+        console.log("The Default environment doesn't exists, creating it");
+        //RUN python -m venv Volume/Environments/default
+        const evpath = path.join(ENVIRONMENTSDIRECTORY,"default");
+        
+        let pippath = path.join(evpath,"bin","pip");        
+        const winpippath = path.join(evpath,"Scripts","pip.exe");
+
+        if(comjs.isWindows()){
+            pippath = winpippath;
+        }
+
+        const cm = `python -m venv ${evpath}`
+
+        console.log("Installing Pip Dependencies");
+        //create the environment and do stuff
+        
+        //pip install the requirements
+        const req = path.join(__dirname,'requirements.txt');
+        
+        const c1 = `${pippath} install -r "${req}"`
+        
+        const fc = `${cm} && ${c1}`
+        
+        try{
+            execSync(fc);
+        }catch(e){
+            console.log(`Error when installing packages, ${e}`)
+        }
+
+        console.log("Finished creating environment");
+
+
+    }
+
     
 
 }

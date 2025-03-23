@@ -1,11 +1,15 @@
 FROM node:23-bookworm-slim
 
+WORKDIR /app
+
 RUN apt-get update || : && apt-get install python-is-python3 -y
 RUN apt-get install python3-pip -y
 RUN apt-get install python3-full -y
+RUN apt-get install build-essential cargo -y
+# make folders
 # RUN python -m ensurepip --upgrade
 
-WORKDIR /app
+
 
 # make folders
 RUN mkdir build
@@ -16,7 +20,8 @@ RUN mkdir build
 # copy in the data
 # COPY example.com.* ./
 # COPY Volume/Models/Helper.py Volume/Models
-COPY requirements.txt .
+ADD requirements.txt requirements.txt
+
 # copy packages
 COPY package* ./
 RUN npm install
