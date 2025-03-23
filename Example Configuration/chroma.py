@@ -5,17 +5,19 @@ from diffusers import StableDiffusionPipeline
 from diffusers import DDPMScheduler
 import torch
 import random
-from diffusers import StableDiffusion3Pipeline
-#DO NOT PUSH THIS TOKEN
-token = "YOUR TOKEN"
+from datasets import load_dataset
 
-def GenImg(text,negatives,steps,height,width,callback,guidance_scale,count):
-    pipe = StableDiffusion3Pipeline.from_pretrained("stabilityai/stable-diffusion-3.5-medium", torch_dtype=torch.bfloat16,token=token)
-    pipe = pipe.to("cuda")
+#ds = load_dataset("gsdf/EasyNegative")
 
-    images = pipe(text,width=width,height=height,num_inference_steps=steps,guidance_scale=guidance_scale,num_images_per_prompt=count).images
+def GenImg(text,negatives,steps,height,width,callback,count):
+    mid = '../Cache/chroma/Chroma/chroma_011-mid_1330309-vid_1501971.safetensors'
+    model = StableDiffusionPipeline.from_single_file(mid,use_safetensors=True,torch_dtype=torch.float16).to('cuda')
+    #model.load_textual_inversion('embed/EasyNegative')
+    #model.scheduler = DDPMScheduler.from_config(model.scheduler.config)
     
+    high_noise_frac = 0.8
 
+    images = model(text,negative_prompt=negatives,num_inference_steps=steps,height=height,width=width,denoising_end=high_noise_frac,callback_on_step_end=callback,num_images_per_prompt=count).images
     return images
 
 def TellUser(socket,pipe,step,total,stepleft,kwargs):
@@ -29,12 +31,11 @@ def Main(ws,messages : list,chat : int,params : dict,projectfiles : list):
         documentation is in helper.py
     """    
     #parameters for the chat
-    steps = params.get("steps",20)
+    negatives = params.get("negatives","")
+    steps = int(params.get("steps",20))
     height = int(params.get("height",512))
     width = int(params.get("width",512))
-    negatives = params.get("negatives","")
-    guidance_scale = params.get("guidance scale",4.5)
-    count = params.get("count",1)
+    count = int(params.get("count",1))
 
     last = messages[-1]["msg"]["text"]
     text = last
@@ -47,11 +48,10 @@ def Main(ws,messages : list,chat : int,params : dict,projectfiles : list):
 
     mycall = lambda p,x,y,z : TellUser(ws,p,x,steps,y,z)
 
-    images = GenImg(text,negatives,steps,height,width,mycall,guidance_scale,count)
-    
+    images = GenImg(text,negatives,steps,height,width,mycall,count)
 
 
-    H.SendChat(chat,date,"",files=images)
+    H.SendChat(chat,date,'',files=images)
 
     H.GetFrom(ws,date)    
     H.Update(ws,"done generating message, closing")

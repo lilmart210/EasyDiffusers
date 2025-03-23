@@ -12,13 +12,15 @@ def GenImg(text,negatives,steps,height,width,callback):
     model.scheduler = DDPMScheduler.from_config(model.scheduler.config)
     high_noise_frac = 0.8
 
-    images = model(text,negative_prompt=negatives,num_inference_steps=steps,height=height,width=width,denoising_end=high_noise_frac,callback=callback,callback_steps = 1).images
+    images = model(text,negative_prompt=negatives,num_inference_steps=steps,height=height,width=width,denoising_end=high_noise_frac,callback_on_step_end=callback).images
     return images
 
-def TellUser(socket,total,step,timestep,latents):
+def TellUser(socket,pipe,step,total,stepleft,kwargs):
     H.Update(socket,f"step :{step}/{total}")
+    
+    return kwargs
 
-def Main(ws,messages : list,chat : int,params : dict,files : list):
+def Main(ws,messages : list,chat : int,params : dict,projectfiles : list):
     """
         params is in key value format
         documentation is in helper.py
@@ -38,19 +40,12 @@ def Main(ws,messages : list,chat : int,params : dict,files : list):
 
     H.Update(ws,"generating message")
 
-    mycall = lambda x,y,z : TellUser(ws,steps,x,y,z)
+    mycall = lambda p,x,y,z : TellUser(ws,p,x,steps,y,z)
 
     images = GenImg(text,negatives,steps,height,width,mycall)
-    
-    #random text from project files if is there
-    rt = ""
-
-    if(len(files)):
-        sp = files[0]["text"].split(' ')
-        rt = files[0]["name"] + " "+sp[random.randint(0,len(sp) - 1)]
 
 
-    H.SendChat(chat,date,rt,images)
+    H.SendChat(chat,date,'',files=images)
 
     H.GetFrom(ws,date)    
     H.Update(ws,"done generating message, closing")

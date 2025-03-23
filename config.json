@@ -1,1 +1,32 @@
-[]
+[
+    {
+        "name" : "Anime",
+        "source" : "anime.py",
+        "options" : [
+            {
+                "name" : "inference",
+                "default" : 20,
+                "type" : "select",
+                "selection" : [10,20,30,40]
+            },
+            {
+                "name" : "count",
+                "default" : 1,
+                "max" : 4,
+                "min" : 1,
+                "type" : "number"
+            },
+            {
+                "name" : "cpu",
+                "default" : true,
+                "type" : "boolean"
+            },
+            {
+                "name" : "negatives",
+                "default" : "extra arms",
+                "type" : "string"
+            }
+        ],
+        "env" : "default"
+    }
+]

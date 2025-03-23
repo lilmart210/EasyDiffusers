@@ -15,9 +15,10 @@ def Resp(messages,max_tokens=512):
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
         torch_dtype="auto",
-        device_map="cuda"
+        device_map="auto"
     )
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    
+    tokenizer = AutoTokenizer.from_pretrained(model_name,device_map="auto")
 
     text = tokenizer.apply_chat_template(
         messages,
@@ -28,7 +29,7 @@ def Resp(messages,max_tokens=512):
     )
 
     model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
-
+    
     generated_ids = model.generate(
         **model_inputs,
         max_new_tokens=max_tokens,

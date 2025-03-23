@@ -17,14 +17,58 @@
                 "type" : "number"
             },
             {
-                "name" : "cpu",
-                "default" : true,
-                "type" : "boolean"
+                "name" : "negatives",
+                "default" : "extra arms",
+                "type" : "string"
+            },
+            {
+                "name" : "width",
+                "type" : "select",
+                "default" : 512,
+                "selection" : [256,512,720,1024]
+            },
+            {
+                "name" : "height",
+                "type" : "select",
+                "default" : 512,
+                "selection" : [256,512,720,1024]
+            }
+        ],
+        "env" : "default"
+    },
+    {
+        "name" : "Chroma",
+        "source" : "chroma.py",
+        "options" : [
+            {
+                "name" : "inference",
+                "default" : 20,
+                "type" : "select",
+                "selection" : [10,20,30,40]
+            },
+            {
+                "name" : "count",
+                "default" : 1,
+                "max" : 4,
+                "min" : 1,
+                "type" : "number"
             },
             {
                 "name" : "negatives",
                 "default" : "extra arms",
                 "type" : "string"
+            },
+            {
+                "name" : "width",
+                "type" : "select",
+                "default" : 512,
+                "selection" : [256,512,720,1024]
+            },
+            {
+                "name" : "height",
+                "type" : "select",
+                "default" : 512,
+                "selection" : [256,512,720,1024]
             }
         ],
         "env" : "default"
@@ -72,7 +116,140 @@
         "source" : "qween05b.py"
     },
     {
+        "name" : "DeepSeek 1.5b",
+        "env" : "default",
+        "options" : [
+            {
+                "name" : "tokens",
+                "type" : "number",
+                "default" : 1000,
+                "min" : 1,
+                "max" : 32768
+            }
+        ],
+        "source" : "deepseekr1.5.py"
+    },
+    {
+        "name" : "DeepSeek 7b",
+        "env" : "default",
+        "options" : [
+            {
+                "name" : "tokens",
+                "type" : "number",
+                "default" : 1000,
+                "min" : 1,
+                "max" : 32768
+            }
+        ],
+        "source" : "deepseekr7.py"
+    },
+    {
+        "name" : "DeepSeek 32b",
+        "env" : "default",
+        "options" : [
+            {
+                "name" : "tokens",
+                "type" : "number",
+                "default" : 1000,
+                "min" : 1,
+                "max" : 32768
+            }
+        ],
+        "source" : "deepseekr32.py"
+    },
+    {
         "name" : "Stable Diffusion 3.5 Medium",
+        "env" : "default",
+        "options" : [
+            {
+                "name" : "steps",
+                "type" : "number",
+                "default" : 20,
+                "min" : 1,
+                "max" : 200
+            },
+            {
+                "name" : "width",
+                "type" : "select",
+                "default" : 512,
+                "selection" : [256,512,1024]
+            },
+            {
+                "name" : "height",
+                "type" : "select",
+                "default" : 512,
+                "selection" : [256,512,1024]
+            },
+            {
+                "name" : "negatives",
+                "type" : "string",
+                "default" : ""
+            },
+            {
+                "name" : "guidance scale",
+                "type" : "number",
+                "default" : 4.5,
+                "min" : 1,
+                "max" : 10
+            },
+            {
+                "name" : "count",
+                "type" : "number",
+                "default" : 1
+            }
+        ],
+        "source" : "stablediff3.5med.py"
+    },
+    {
+        "name" : "Flux 1",
+        "env" : "default",
+        "options" : [
+            {
+                "name" : "steps",
+                "type" : "number",
+                "default" : 20,
+                "min" : 1,
+                "max" : 200
+            },
+            {
+                "name" : "width",
+                "type" : "select",
+                "default" : 512,
+                "selection" : [256,512,1024]
+            },
+            {
+                "name" : "height",
+                "type" : "select",
+                "default" : 512,
+                "selection" : [256,512,1024]
+            },
+            {
+                "name" : "negatives",
+                "type" : "string",
+                "default" : ""
+            },
+            {
+                "name" : "guidance scale",
+                "type" : "number",
+                "default" : 4.5,
+                "min" : 1,
+                "max" : 10
+            },
+            {
+                "name" : "count",
+                "type" : "number",
+                "default" : 1
+            },
+            {
+                "name" : "NSFW",
+                "type" : "boolean",
+                "default" : false
+            }
+        ],
+        "source" : "flux.py"
+    },
+    {
+        "name" : "Stable Diffusion 3.5 Large",
         "env" : "default",
         "options" : [
             {
@@ -107,6 +284,129 @@
                 "max" : 10
             }
         ],
-        "source" : "stablediff3.5med.py"
+        "source" : "stablediff3.5large.py"
+    },
+    {
+        "name" : "Inpaint Diffusion",
+        "env" : "default",
+        "options" : [
+            {
+                "name" : "steps",
+                "type" : "number",
+                "default" : 20,
+                "min" : 1,
+                "max" : 200
+            },
+            {
+                "name" : "guidance scale",
+                "type" : "number",
+                "default" : 4.5,
+                "min" : 1,
+                "max" : 10
+            }
+        ],
+        "source" : "inpaintstablediff.py"
+    },
+    {
+        "name" : "LTXVideo",
+        "env" : "default",
+        "options" : [
+            {
+                "name" : "steps",
+                "type" : "number",
+                "default" : 20,
+                "min" : 1,
+                "max" : 200
+            },
+            {
+                "name" : "width",
+                "type" : "select",
+                "default" : 512,
+                "selection" : [256,512,1024]
+            },
+            {
+                "name" : "height",
+                "type" : "select",
+                "default" : 512,
+                "selection" : [256,512,1024]
+            },
+            {
+                "name" : "negatives",
+                "type" : "string",
+                "default" : ""
+            },
+            {
+                "name" : "guidance scale",
+                "type" : "number",
+                "default" : 4.5,
+                "min" : 1,
+                "max" : 10
+            },
+            {
+                "name" : "fps",
+                "type" : "number",
+                "default" : 24,
+                "min" : 1,
+                "max" : 60
+            },
+            {
+                "name" : "frames",
+                "type" : "number",
+                "default" : 120,
+                "min" : 1,
+                "max" : 1000
+            },
+            {
+                "name" : "offload",
+                "type" : "boolean",
+                "default" : false
+            }
+        ],
+        "source" : "ltxvideo.py"
+    },
+    {
+        "name" : "Cog5b",
+        "env" : "default",
+        "options" : [
+            {
+                "name" : "steps",
+                "type" : "number",
+                "default" : 20,
+                "min" : 1,
+                "max" : 200
+            },
+            {
+                "name" : "negatives",
+                "type" : "string",
+                "default" : ""
+            },
+            {
+                "name" : "guidance scale",
+                "type" : "number",
+                "default" : 4.5,
+                "min" : 1,
+                "max" : 10
+            },
+            {
+                "name" : "count",
+                "type" : "number",
+                "default" : 1,
+                "min" : 1,
+                "max" : 10
+            },
+            {
+                "name" : "frames",
+                "type" : "number",
+                "default" : 120,
+                "min" : 1,
+                "max" : 1000
+            },
+            {
+                "name" : "offload",
+                "type" : "boolean",
+                "default" : false
+            }
+        ],
+        "source" : "CogVideo5bxv.py"
     }
 ]

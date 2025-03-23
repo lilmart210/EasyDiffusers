@@ -5,14 +5,19 @@ from diffusers import StableDiffusionPipeline
 from diffusers import DDPMScheduler
 import torch
 import random
+from datasets import load_dataset
 
-def GenImg(text,negatives,steps,height,width,callback):
+#ds = load_dataset("gsdf/EasyNegative")
+
+def GenImg(text,negatives,steps,height,width,callback,count):
     mid = 'gsdf/Counterfeit-V2.5'
     model = StableDiffusionPipeline.from_pretrained(mid,torch_dtype=torch.float16).to('cuda')
+    #model.load_textual_inversion('embed/EasyNegative')
     model.scheduler = DDPMScheduler.from_config(model.scheduler.config)
+    
     high_noise_frac = 0.8
 
-    images = model(text,negative_prompt=negatives,num_inference_steps=steps,height=height,width=width,denoising_end=high_noise_frac,callback_on_step_end=callback).images
+    images = model(text,negative_prompt=negatives,num_inference_steps=steps,height=height,width=width,denoising_end=high_noise_frac,callback_on_step_end=callback,num_images_per_prompt=count).images
     return images
 
 def TellUser(socket,pipe,step,total,stepleft,kwargs):
@@ -30,7 +35,8 @@ def Main(ws,messages : list,chat : int,params : dict,projectfiles : list):
     steps = int(params.get("steps",20))
     height = int(params.get("height",512))
     width = int(params.get("width",512))
-    
+    count = int(params.get("count",1))
+
     last = messages[-1]["msg"]["text"]
     text = last
 
@@ -42,7 +48,7 @@ def Main(ws,messages : list,chat : int,params : dict,projectfiles : list):
 
     mycall = lambda p,x,y,z : TellUser(ws,p,x,steps,y,z)
 
-    images = GenImg(text,negatives,steps,height,width,mycall)
+    images = GenImg(text,negatives,steps,height,width,mycall,count)
 
 
     H.SendChat(chat,date,'',files=images)

@@ -6,6 +6,7 @@ RUN apt-get update || : && apt-get install python-is-python3 -y
 RUN apt-get install python3-pip -y
 RUN apt-get install python3-full -y
 RUN apt-get install build-essential cargo -y
+RUN apt update && apt install python3-opencv -y
 # make folders
 # RUN python -m ensurepip --upgrade
 
